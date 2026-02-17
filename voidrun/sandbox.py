@@ -65,6 +65,70 @@ class Sandbox:
                     return await self._client.sandboxes.delete(self.id)
         return self.delete()
 
+    def start(self):
+        """Start a stopped sandbox (Sync)."""
+        from .api_client.api.sandboxes_api import SandboxesApi
+        api = SandboxesApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
+        response = api.start_sandbox_with_http_info(id=self.id)
+        return VoidRunResponse(response.data, response)
+
+    async def start_async(self):
+        """Start a stopped sandbox (Async)."""
+        if hasattr(self._client, "_run_async"):
+            from .api_client.api.sandboxes_api import SandboxesApi
+            api = SandboxesApi(self._client._sync_client._api_client)
+            response = await self._client._run_async(api.start_sandbox_with_http_info, id=self.id)
+            return VoidRunResponse(response.data, response)
+        return self.start()
+
+    def stop(self):
+        """Stop a running sandbox (Sync)."""
+        from .api_client.api.sandboxes_api import SandboxesApi
+        api = SandboxesApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
+        response = api.stop_sandbox_with_http_info(id=self.id)
+        return VoidRunResponse(response.data, response)
+
+    async def stop_async(self):
+        """Stop a running sandbox (Async)."""
+        if hasattr(self._client, "_run_async"):
+            from .api_client.api.sandboxes_api import SandboxesApi
+            api = SandboxesApi(self._client._sync_client._api_client)
+            response = await self._client._run_async(api.stop_sandbox_with_http_info, id=self.id)
+            return VoidRunResponse(response.data, response)
+        return self.stop()
+
+    def pause(self):
+        """Pause a running sandbox (Sync)."""
+        from .api_client.api.sandboxes_api import SandboxesApi
+        api = SandboxesApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
+        response = api.pause_sandbox_with_http_info(id=self.id)
+        return VoidRunResponse(response.data, response)
+
+    async def pause_async(self):
+        """Pause a running sandbox (Async)."""
+        if hasattr(self._client, "_run_async"):
+            from .api_client.api.sandboxes_api import SandboxesApi
+            api = SandboxesApi(self._client._sync_client._api_client)
+            response = await self._client._run_async(api.pause_sandbox_with_http_info, id=self.id)
+            return VoidRunResponse(response.data, response)
+        return self.pause()
+
+    def resume(self):
+        """Resume a paused sandbox (Sync)."""
+        from .api_client.api.sandboxes_api import SandboxesApi
+        api = SandboxesApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
+        response = api.resume_sandbox_with_http_info(id=self.id)
+        return VoidRunResponse(response.data, response)
+
+    async def resume_async(self):
+        """Resume a paused sandbox (Async)."""
+        if hasattr(self._client, "_run_async"):
+            from .api_client.api.sandboxes_api import SandboxesApi
+            api = SandboxesApi(self._client._sync_client._api_client)
+            response = await self._client._run_async(api.resume_sandbox_with_http_info, id=self.id)
+            return VoidRunResponse(response.data, response)
+        return self.resume()
+
     def exec(self, command: str, timeout: int = 30, env: Any = None, cwd: Any = None) -> VoidRunResponse[Any]:
         req = ExecRequest(
             command=command,
