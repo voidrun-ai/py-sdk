@@ -17,18 +17,31 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
-from typing import Any, ClassVar, Dict, List
+from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
+from typing import Any, ClassVar, Dict, List, Optional
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GenerateAPIKeyRequest(BaseModel):
+class SessionExecRequest(BaseModel):
     """
-    GenerateAPIKeyRequest
+    SessionExecRequest
     """ # noqa: E501
-    org_id: StrictStr = Field(alias="orgId")
-    key_name: StrictStr = Field(alias="keyName")
-    __properties: ClassVar[List[str]] = ["orgId", "keyName"]
+    action: StrictStr
+    session_id: Optional[StrictStr] = Field(default=None, description="Required for all actions except create", alias="sessionId")
+    shell: Optional[StrictStr] = None
+    command: Optional[StrictStr] = Field(default=None, description="Required when action is `exec`")
+    input: Optional[StrictStr] = Field(default=None, description="Input text when action is `input`")
+    cols: Optional[Annotated[int, Field(le=500, strict=True, ge=1)]] = Field(default=None, description="Required when action is `resize`")
+    rows: Optional[Annotated[int, Field(le=200, strict=True, ge=1)]] = Field(default=None, description="Required when action is `resize`")
+    __properties: ClassVar[List[str]] = ["action", "sessionId", "shell", "command", "input", "cols", "rows"]
+
+    @field_validator('action')
+    def action_validate_enum(cls, value):
+        """Validates the enum"""
+        if value not in set(['create', 'exec', 'input', 'resize', 'close']):
+            raise ValueError("must be one of enum values ('create', 'exec', 'input', 'resize', 'close')")
+        return value
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -48,7 +61,7 @@ class GenerateAPIKeyRequest(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GenerateAPIKeyRequest from a JSON string"""
+        """Create an instance of SessionExecRequest from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -73,7 +86,7 @@ class GenerateAPIKeyRequest(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GenerateAPIKeyRequest from a dict"""
+        """Create an instance of SessionExecRequest from a dict"""
         if obj is None:
             return None
 
@@ -81,8 +94,13 @@ class GenerateAPIKeyRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "orgId": obj.get("orgId"),
-            "keyName": obj.get("keyName")
+            "action": obj.get("action"),
+            "sessionId": obj.get("sessionId"),
+            "shell": obj.get("shell"),
+            "command": obj.get("command"),
+            "input": obj.get("input"),
+            "cols": obj.get("cols"),
+            "rows": obj.get("rows")
         })
         return _obj
 

@@ -18,17 +18,18 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
-from typing import Any, ClassVar, Dict, List
+from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GenerateAPIKeyRequest(BaseModel):
+class GetVersion200Response(BaseModel):
     """
-    GenerateAPIKeyRequest
+    GetVersion200Response
     """ # noqa: E501
-    org_id: StrictStr = Field(alias="orgId")
-    key_name: StrictStr = Field(alias="keyName")
-    __properties: ClassVar[List[str]] = ["orgId", "keyName"]
+    version: Optional[StrictStr] = None
+    commit: Optional[StrictStr] = None
+    build_time: Optional[StrictStr] = Field(default=None, alias="buildTime")
+    __properties: ClassVar[List[str]] = ["version", "commit", "buildTime"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -48,7 +49,7 @@ class GenerateAPIKeyRequest(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GenerateAPIKeyRequest from a JSON string"""
+        """Create an instance of GetVersion200Response from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -73,7 +74,7 @@ class GenerateAPIKeyRequest(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GenerateAPIKeyRequest from a dict"""
+        """Create an instance of GetVersion200Response from a dict"""
         if obj is None:
             return None
 
@@ -81,8 +82,9 @@ class GenerateAPIKeyRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "orgId": obj.get("orgId"),
-            "keyName": obj.get("keyName")
+            "version": obj.get("version"),
+            "commit": obj.get("commit"),
+            "buildTime": obj.get("buildTime")
         })
         return _obj
 

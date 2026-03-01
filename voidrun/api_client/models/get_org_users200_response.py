@@ -17,18 +17,20 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
-from typing import Any, ClassVar, Dict, List
+from pydantic import BaseModel, ConfigDict, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional
+from voidrun.api_client.models.get_org_users200_response_all_of_data_inner import GetOrgUsers200ResponseAllOfDataInner
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GenerateAPIKeyRequest(BaseModel):
+class GetOrgUsers200Response(BaseModel):
     """
-    GenerateAPIKeyRequest
+    GetOrgUsers200Response
     """ # noqa: E501
-    org_id: StrictStr = Field(alias="orgId")
-    key_name: StrictStr = Field(alias="keyName")
-    __properties: ClassVar[List[str]] = ["orgId", "keyName"]
+    status: Optional[StrictStr] = None
+    message: Optional[StrictStr] = None
+    data: Optional[List[GetOrgUsers200ResponseAllOfDataInner]] = None
+    __properties: ClassVar[List[str]] = ["status", "message", "data"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -48,7 +50,7 @@ class GenerateAPIKeyRequest(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GenerateAPIKeyRequest from a JSON string"""
+        """Create an instance of GetOrgUsers200Response from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -69,11 +71,18 @@ class GenerateAPIKeyRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of each item in data (list)
+        _items = []
+        if self.data:
+            for _item_data in self.data:
+                if _item_data:
+                    _items.append(_item_data.to_dict())
+            _dict['data'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GenerateAPIKeyRequest from a dict"""
+        """Create an instance of GetOrgUsers200Response from a dict"""
         if obj is None:
             return None
 
@@ -81,8 +90,9 @@ class GenerateAPIKeyRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "orgId": obj.get("orgId"),
-            "keyName": obj.get("keyName")
+            "status": obj.get("status"),
+            "message": obj.get("message"),
+            "data": [GetOrgUsers200ResponseAllOfDataInner.from_dict(_item) for _item in obj["data"]] if obj.get("data") is not None else None
         })
         return _obj
 

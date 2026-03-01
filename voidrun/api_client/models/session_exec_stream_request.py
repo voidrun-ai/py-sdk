@@ -22,13 +22,13 @@ from typing import Any, ClassVar, Dict, List
 from typing import Optional, Set
 from typing_extensions import Self
 
-class GenerateAPIKeyRequest(BaseModel):
+class SessionExecStreamRequest(BaseModel):
     """
-    GenerateAPIKeyRequest
+    SessionExecStreamRequest
     """ # noqa: E501
-    org_id: StrictStr = Field(alias="orgId")
-    key_name: StrictStr = Field(alias="keyName")
-    __properties: ClassVar[List[str]] = ["orgId", "keyName"]
+    session_id: StrictStr = Field(alias="sessionId")
+    command: StrictStr
+    __properties: ClassVar[List[str]] = ["sessionId", "command"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -48,7 +48,7 @@ class GenerateAPIKeyRequest(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of GenerateAPIKeyRequest from a JSON string"""
+        """Create an instance of SessionExecStreamRequest from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -73,7 +73,7 @@ class GenerateAPIKeyRequest(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of GenerateAPIKeyRequest from a dict"""
+        """Create an instance of SessionExecStreamRequest from a dict"""
         if obj is None:
             return None
 
@@ -81,8 +81,8 @@ class GenerateAPIKeyRequest(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "orgId": obj.get("orgId"),
-            "keyName": obj.get("keyName")
+            "sessionId": obj.get("sessionId"),
+            "command": obj.get("command")
         })
         return _obj
 
