@@ -213,7 +213,7 @@ conf = voidrun.api_client.Configuration(
     ) -> None:
         """Constructor
         """
-        self._base_path = "http://localhost:33944/api" if host is None else host
+        self._base_path = "https://platform.void-run.com/api" if host is None else host
         """Default Base url
         """
         self.server_index = 0 if server_index is None and host is None else server_index
@@ -545,10 +545,6 @@ conf = voidrun.api_client.Configuration(
         :return: An array of host settings
         """
         return [
-            {
-                'url': "http://localhost:33944/api",
-                'description': "Local development server",
-            },
             {
                 'url': "https://platform.void-run.com/api",
                 'description': "Production server",
