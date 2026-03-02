@@ -550,7 +550,7 @@ conf = voidrun.api_client.Configuration(
                 'description': "Local development server",
             },
             {
-                'url': "https://api.void-run.com/api",
+                'url': "https://platform.void-run.com/api",
                 'description': "Production server",
             }
         ]
