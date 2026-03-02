@@ -1,0 +1,114 @@
+name: Bump and Publish Python SDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+# Prevent concurrent runs from clashing
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global pull.rebase true
+
+      - name: Bump Version in pyproject.toml
+        id: bump
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          def bump_version(current, bump_type):
+              major, minor, patch = map(int, current.split('.'))
+              if bump_type == 'major':
+                  major += 1; minor = 0; patch = 0
+              elif bump_type == 'minor':
+                  minor += 1; patch = 0
+              else:
+                  patch += 1
+              return f"{major}.{minor}.{patch}"
+
+          path = Path("pyproject.toml")
+          text = path.read_text()
+          
+          # Find current version
+          match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
+          if not match:
+              raise SystemExit("Could not find version in pyproject.toml")
+          
+          current_v = match.group(1)
+          new_v = bump_version(current_v, "${{ inputs.version_type }}")
+          
+          # Update file
+          updated_text = re.sub(r'^version\s*=\s*"[^"]+"', f'version = "{new_v}"', text, count=1, flags=re.MULTILINE)
+          path.write_text(updated_text)
+          
+          # Export for next steps
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"new_version={new_v}\n")
+              f.write(f"old_version={current_v}\n")
+          PY
+
+      - name: Commit and Tag
+        run: |
+          NEW_V="${{ steps.bump.outputs.new_version }}"
+          git add pyproject.toml
+          git commit -m "chore: release v$NEW_V"
+          git tag -a "v$NEW_V" -m "v$NEW_V"
+
+      - name: Install build tools
+        run: python -m pip install --upgrade build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Sync and Push
+        run: |
+          # Pull in case someone pushed to main while we were building
+          git pull origin main --rebase
+          git push origin main --follow-tags
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: python -m twine upload dist/*
+
+      - name: Summary
+        run: |
+          echo "### 🚀 Python SDK Released" >> $GITHUB_STEP_SUMMARY
+          echo "- **Old Version:** ${{ steps.bump.outputs.old_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **New Version:** ${{ steps.bump.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **PyPI:** Published" >> $GITHUB_STEP_SUMMARY
