@@ -105,7 +105,7 @@ class VoidRun:
         self.api_key = api_key or os.getenv("VR_API_KEY") or os.getenv("API_KEY")
         if not self.api_key:
             raise ValueError("API key is required (pass it or set VR_API_KEY/API_KEY)")
-        resolved_base_url = base_url or os.getenv("VOIDRUN_BASE_URL") or os.getenv("VR_API_URL") or "http://localhost:33944/api"
+        resolved_base_url = base_url or os.getenv("VR_API_URL") or os.getenv("VR_API_URL")
         self.config = Configuration(
             host=resolved_base_url,
             api_key={'ApiKeyAuth': self.api_key}
