@@ -28,14 +28,14 @@ class CreateSandboxRequest(BaseModel):
     CreateSandboxRequest
     """ # noqa: E501
     name: Annotated[str, Field(strict=True)] = Field(description="DNS-1123 subdomain format")
-    template_id: Optional[StrictStr] = Field(default=None, alias="templateId")
+    image: Optional[StrictStr] = None
     cpu: Optional[Annotated[int, Field(le=8, strict=True, ge=1)]] = Field(default=None, description="Number of vCPUs")
     mem: Optional[Annotated[int, Field(le=16384, strict=True, ge=1024)]] = Field(default=None, description="Memory in MiB")
     org_id: Optional[StrictStr] = Field(default=None, alias="orgId")
     user_id: Optional[StrictStr] = Field(default=None, alias="userId")
     sync: Optional[StrictBool] = Field(default=True, description="If true (default), creation blocks until the agent responds (fast readiness check, ~2s timeout)")
     env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables to set on the sandbox", alias="envVars")
-    __properties: ClassVar[List[str]] = ["name", "templateId", "cpu", "mem", "orgId", "userId", "sync", "envVars"]
+    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars"]
 
     @field_validator('name')
     def name_validate_regular_expression(cls, value):
@@ -96,7 +96,7 @@ class CreateSandboxRequest(BaseModel):
 
         _obj = cls.model_validate({
             "name": obj.get("name"),
-            "templateId": obj.get("templateId"),
+            "image": obj.get("image"),
             "cpu": obj.get("cpu"),
             "mem": obj.get("mem"),
             "orgId": obj.get("orgId"),

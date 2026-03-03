@@ -83,7 +83,7 @@ sandbox = vr.sandboxes.create(
     name="my-sandbox",       # Optional: Sandbox name
     mem=1024,               # Memory in MB (optional, has defaults)
     cpu=1,                  # CPU cores (optional, has defaults)
-    template_id="template-id",  # Optional: Template ID
+    image="template-id",  # Optional: Image ID
     env_vars={              # Optional: Environment variables
         "DEBUG": "true",
         "LOG_LEVEL": "info"
@@ -454,7 +454,7 @@ vr = VoidRun(api_key="...")
   - `name?: str` - Sandbox name
   - `cpu?: int` - CPU cores
   - `mem?: int` - Memory in MB
-  - `template_id?: str` - Template ID
+  - `image?: str` - Image ID
   - `env_vars?: dict` - Environment variables
 - `sandboxes.list(page=1, limit=50)` - List all sandboxes
 - `sandboxes.get(id: str)` - Get a specific sandbox
