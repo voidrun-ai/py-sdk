@@ -63,17 +63,23 @@ class Interpreter:
         raise TypeError("run_async requires AsyncVoidRun")
 
     def _build_command(self, code: str, language: str) -> str:
-        timestamp = int(time.time())
+        timestamp = int(time.time() * 1000)
         if language == "python":
             if len(code) < 1000 and "\n\n" not in code:
                 escaped = code.replace("'", "'\\''")
                 return f"python3 -c '{escaped}'"
             else:
                 temp_file = f"/tmp/code_{timestamp}.py"
-                return f"cat > {temp_file} << 'EOFPYTHON'\n{code}\nEOFPYTHON && python3 {temp_file} && rm -f {temp_file}"
-        elif language in ["javascript", "node", "typescript"]:
+                return f"cat > {temp_file} << 'EOFPYTHON'\n{code}\nEOFPYTHON\npython3 {temp_file} && rm -f {temp_file}"
+        elif language in ["javascript", "node"]:
+            if len(code) < 1000 and "\n\n" not in code:
+                escaped = code.replace("'", "'\\''")
+                return f"node -e '{escaped}'"
             temp_file = f"/tmp/code_{timestamp}.js"
-            return f"cat > {temp_file} << 'EOFJS'\n{code}\nEOFJS && node {temp_file} && rm -f {temp_file}"
+            return f"cat > {temp_file} << 'EOFJS'\n{code}\nEOFJS\nnode {temp_file} && rm -f {temp_file}"
+        elif language == "typescript":
+            temp_file = f"/tmp/code_{timestamp}.js"
+            return f"cat > {temp_file} << 'EOFJS'\n{code}\nEOFJS\nnode {temp_file} && rm -f {temp_file}"
         elif language in ["bash", "sh"]:
             escaped = code.replace("'", "'\\''")
             return f"bash -c '{escaped}'"

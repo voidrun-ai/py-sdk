@@ -7,7 +7,7 @@ def main() -> None:
 
     try:
         print("[TEST] Run background process")
-        handle = sandbox.commands.run("sh -c \"while true; do :; done\"")
+        handle = sandbox.commands.run("sleep 2")
         pid = handle.data.pid
         print("PID:", pid)
 
