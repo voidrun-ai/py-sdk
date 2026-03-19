@@ -38,10 +38,10 @@ class Sandbox(BaseModel):
     created_by: Optional[StrictStr] = Field(default=None, description="User ID who created the sandbox", alias="createdBy")
     org_id: Optional[StrictStr] = Field(default=None, description="Organization ID the sandbox belongs to", alias="orgId")
     env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables set on the sandbox (optional, only present if configured)", alias="envVars")
-    disable_pause: Optional[StrictBool] = Field(default=None, description="Indicates if auto-pause is disabled", alias="disablePause")
+    auto_sleep: Optional[StrictBool] = Field(default=None, description="Indicates if auto-sleep is enabled", alias="autoSleep")
     region: Optional[StrictStr] = Field(default=None, description="Region where the sandbox is hosted")
     ref_id: Optional[StrictStr] = Field(default=None, description="External reference ID", alias="refId")
-    __properties: ClassVar[List[str]] = ["id", "name", "image", "cpu", "mem", "diskMB", "status", "createdAt", "createdBy", "orgId", "envVars", "disablePause", "region", "refId"]
+    __properties: ClassVar[List[str]] = ["id", "name", "image", "cpu", "mem", "diskMB", "status", "createdAt", "createdBy", "orgId", "envVars", "autoSleep", "region", "refId"]
 
     @field_validator('status')
     def status_validate_enum(cls, value):
@@ -115,7 +115,7 @@ class Sandbox(BaseModel):
             "createdBy": obj.get("createdBy"),
             "orgId": obj.get("orgId"),
             "envVars": obj.get("envVars"),
-            "disablePause": obj.get("disablePause"),
+            "autoSleep": obj.get("autoSleep"),
             "region": obj.get("region"),
             "refId": obj.get("refId")
         })

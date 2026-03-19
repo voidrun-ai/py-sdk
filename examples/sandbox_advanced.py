@@ -14,9 +14,7 @@ async def main():
     async with AsyncVoidRun() as vr:
         response = await vr.sandboxes.create(
             name=sandbox_name,
-            region="us",
-            ref_id=ref_id,
-            disable_pause=True,
+            auto_sleep=False,
             env_vars={
                 "APP_ENV": "production",
                 "DEBUG": "false"
@@ -32,11 +30,11 @@ async def main():
             # The properties might not be strongly typed on the Sandbox object yet, so we get them from the underlying model
             region = getattr(sandbox._model, "region", None)
             model_ref_id = getattr(sandbox._model, "ref_id", None)
-            disable_pause = getattr(sandbox._model, "disable_pause", None)
+            auto_sleep = getattr(sandbox._model, "auto_sleep", None)
 
             print(f"- Region: {region}")
             print(f"- RefID: {model_ref_id}")
-            print(f"- DisablePause: {disable_pause}")
+            print(f"- AutoSleep: {auto_sleep}")
 
             print("\n--- Pagination Test ---")
             print("Listing sandboxes (page 1, limit 2)...")

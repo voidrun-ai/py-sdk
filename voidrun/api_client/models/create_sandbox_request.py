@@ -35,10 +35,10 @@ class CreateSandboxRequest(BaseModel):
     user_id: Optional[StrictStr] = Field(default=None, alias="userId")
     sync: Optional[StrictBool] = Field(default=True, description="If true (default), creation blocks until the agent responds (fast readiness check, ~2s timeout)")
     env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables to set on the sandbox", alias="envVars")
-    disable_pause: Optional[StrictBool] = Field(default=None, description="If true, the sandbox will not be auto-paused due to inactivity", alias="disablePause")
+    auto_sleep: Optional[StrictBool] = Field(default=None, description="If true, the sandbox will be auto-paused due to inactivity", alias="autoSleep")
     region: Optional[StrictStr] = Field(default=None, description="Target region for the sandbox")
     ref_id: Optional[StrictStr] = Field(default=None, description="External reference ID for tracking", alias="refId")
-    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars", "disablePause", "region", "refId"]
+    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars", "autoSleep", "region", "refId"]
 
     @field_validator('name')
     def name_validate_regular_expression(cls, value):
@@ -106,7 +106,7 @@ class CreateSandboxRequest(BaseModel):
             "userId": obj.get("userId"),
             "sync": obj.get("sync") if obj.get("sync") is not None else True,
             "envVars": obj.get("envVars"),
-            "disablePause": obj.get("disablePause"),
+            "autoSleep": obj.get("autoSleep"),
             "region": obj.get("region"),
             "refId": obj.get("refId")
         })
