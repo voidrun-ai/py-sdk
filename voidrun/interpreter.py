@@ -78,8 +78,11 @@ class Interpreter:
             temp_file = f"/tmp/code_{timestamp}.js"
             return f"cat > {temp_file} << 'EOFJS'\n{code}\nEOFJS\nnode {temp_file} && rm -f {temp_file}"
         elif language == "typescript":
-            temp_file = f"/tmp/code_{timestamp}.js"
-            return f"cat > {temp_file} << 'EOFJS'\n{code}\nEOFJS\nnode {temp_file} && rm -f {temp_file}"
+            if len(code) < 1000 and "\n\n" not in code:
+                escaped = code.replace("'", "'\\''")
+                return f"tsx -e '{escaped}'"
+            temp_file = f"/tmp/code_{timestamp}.ts"
+            return f"cat > {temp_file} << 'EOFTS'\n{code}\nEOFTS\ntsx {temp_file} && rm -f {temp_file}"
         elif language in ["bash", "sh"]:
             escaped = code.replace("'", "'\\''")
             return f"bash -c '{escaped}'"
