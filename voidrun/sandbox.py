@@ -7,6 +7,7 @@ import httpx
 
 from .api_client.api.execution_api import ExecutionApi
 from .api_client.models.exec_request import ExecRequest
+from .api_client.models.exec_response_data import ExecResponseData
 from .api_client.models.sandbox import Sandbox as SandboxModel
 from .commands import Commands
 from .fs import FS
@@ -166,8 +167,12 @@ class Sandbox:
         timeout: int = 30,
         env: Any = None,
         cwd: Any = None,
-    ) -> VoidRunResponse[Any]:
-        """Exec: pass a string command or an `ExecRequest` (ts-sdk style)."""
+    ) -> VoidRunResponse[ExecResponseData]:
+        """Exec: pass a string command or an `ExecRequest` (ts-sdk style).
+
+        Returns ``VoidRunResponse`` whose ``.data`` is ``ExecResponseData`` (stdout/stderr/exit_code),
+        not the outer ``ExecResponse`` envelope, so use ``result.data.stdout`` not ``result.data.data.stdout``.
+        """
         if isinstance(command_or_request, ExecRequest):
             req = command_or_request
         else:
@@ -179,7 +184,11 @@ class Sandbox:
             id=self.id,
             exec_request=req,
         )
-        return VoidRunResponse(response.data, response)
+        body = response.data
+        inner = body.data if body is not None else None
+        if inner is None:
+            inner = ExecResponseData()
+        return VoidRunResponse(inner, response)
 
     def exec_stream(self, command: str, timeout: int = 30, env: Any = None, cwd: Any = None,
                     on_stdout=None, on_stderr=None, on_exit=None, on_error=None) -> None:
