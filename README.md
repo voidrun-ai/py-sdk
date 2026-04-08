@@ -31,13 +31,13 @@ The high-level API is aligned with the official **TypeScript SDK** (`create_sand
 
 ## Features
 
-- **Sandbox lifecycle** — Create, list, fetch, start/stop/pause/resume, and remove sandboxes (sync and async).
-- **Shell execution** — `exec` with optional `ExecRequest`; SSE streaming via `exec_stream`.
-- **Code interpreter** — `run_code` / `interpreter.run` return a structured **`CodeExecutionResult`** (stdout, stderr, success, exit_code, results, logs).
-- **Files** — Create, upload, download, list, move, copy, compress, extract, permissions, search, disk usage.
-- **File watching** — WebSocket-backed directory watches (async).
-- **PTY** — Ephemeral and persistent terminal sessions, resize, `run_command` with prompt detection.
-- **Background commands** — Run, list, attach, wait, kill long-running processes.
+- **Sandbox lifecycle**: Create, list, fetch, start/stop/pause/resume, and remove sandboxes (sync and async).
+- **Shell execution**: `exec` with optional `ExecRequest`; SSE streaming via `exec_stream`.
+- **Code interpreter**: `run_code` / `interpreter.run` return a structured **`CodeExecutionResult`** (stdout, stderr, success, exit_code, results, logs).
+- **Files**: Create, upload, download, list, move, copy, compress, extract, permissions, search, disk usage.
+- **File watching**: WebSocket-backed directory watches (async).
+- **PTY**: Ephemeral and persistent terminal sessions, resize, `run_command` with prompt detection.
+- **Background commands**: Run, list, attach, wait, kill long-running processes.
 
 ## Requirements
 
@@ -65,7 +65,7 @@ pip install -e .
 
 ## Configuration
 
-`VoidRun` and `AsyncVoidRun` require an **API key** and a **base URL**. Set **`VR_API_URL`** or **`API_URL`** in the environment (unlike the TypeScript SDK, the Python client does not fall back to a packaged default when these are unset).
+`VoidRun` and `AsyncVoidRun` require an **API key**. The **API base URL** defaults to the hosted endpoint (**`DEFAULT_API_BASE_URL`**, aligned with the TypeScript SDK and OpenAPI **`servers`**). Set **`VR_API_URL`** or **`API_URL`**, or pass **`base_url=`**, only for **self-hosted** deployments.
 
 ### Constructor
 
@@ -82,7 +82,7 @@ vr = VoidRun(
 | Variable | Purpose |
 |----------|---------|
 | `VR_API_KEY` or `API_KEY` | API key (required unless passed to the constructor). |
-| `VR_API_URL` or `API_URL` | API base URL (required). |
+| `VR_API_URL` or `API_URL` | *(Self-hosted only.)* Overrides the default API base URL. |
 
 ### Defaults (aligned with TypeScript SDK)
 
@@ -90,6 +90,7 @@ Exported from `voidrun`:
 
 | Constant | Value | Meaning |
 |----------|-------|---------|
+| `DEFAULT_API_BASE_URL` | `https://platform.void-run.com/api` | Default API host when `VR_API_URL` / `API_URL` are unset. |
 | `DEFAULT_SANDBOX_IMAGE` | `"code"` | Default image id when creating a sandbox without `image=`. |
 | `DEFAULT_SANDBOX_CPU` | `1` | Default CPU count. |
 | `DEFAULT_SANDBOX_MEM` | `1024` | Default memory in MB. |
@@ -103,7 +104,7 @@ For **self-hosted** VoidRun, set **`VR_API_URL`** (or **`API_URL`**) to your ins
 ```python
 from voidrun import VoidRun
 
-vr = VoidRun()  # uses VR_API_KEY + VR_API_URL if set
+vr = VoidRun()  # uses VR_API_KEY; default base URL unless VR_API_URL / API_URL is set
 
 sandbox = vr.create_sandbox(mem=1024, cpu=1)
 
@@ -160,8 +161,8 @@ Use the same mental model as `@voidrun/sdk` (or the internal TS client):
 
 **Listing sandboxes** returns a **`ListSandboxesResult`** with:
 
-- `.sandboxes` — list of `Sandbox` instances  
-- `.meta` — `ListSandboxesMeta` (`total`, `page`, `limit`, `total_pages`)
+- `.sandboxes`: list of `Sandbox` instances  
+- `.meta`: `ListSandboxesMeta` (`total`, `page`, `limit`, `total_pages`)
 
 ## Core concepts
 
@@ -186,16 +187,16 @@ Notable attributes: `id`, `name`, `cpu`, `mem`, `org_id`, `status`, `env_vars`, 
 
 Sub-clients:
 
-- `.fs` — file operations  
-- `.pty` — pseudo-terminal  
-- `.interpreter` — `CodeInterpreter`  
-- `.commands` — background processes  
+- `.fs`: file operations  
+- `.pty`: pseudo-terminal  
+- `.interpreter`: `CodeInterpreter`  
+- `.commands`: background processes  
 
 Lifecycle:
 
 - `start`, `stop`, `pause`, `resume` (and `*_async` variants where applicable)  
-- `remove()` / `remove_async()` — delete sandbox on the API  
-- `delete()` / `delete_async()` — deprecated aliases for `remove`  
+- `remove()` / `remove_async()`: delete sandbox on the API  
+- `delete()` / `delete_async()`: deprecated aliases for `remove`  
 
 `info()` returns `self` (same idea as TS `sandbox.info()`).
 
@@ -213,7 +214,7 @@ r = sandbox.exec(command="pwd", cwd="/tmp", timeout=60)
 r = sandbox.exec(ExecRequest(command="ls", cwd="/"))
 ```
 
-Return type: **`VoidRunResponse[ExecResponseData]`** — the API’s outer **`ExecResponse`** envelope is unwrapped so **`r.data`** is **`ExecResponseData`** (stdout / stderr / exit_code):
+Return type: **`VoidRunResponse[ExecResponseData]`**: the API’s outer **`ExecResponse`** envelope is unwrapped so **`r.data`** is **`ExecResponseData`** (stdout / stderr / exit_code):
 
 ```python
 print(r.data.stdout, r.data.stderr, r.data.exit_code)
@@ -407,14 +408,13 @@ From the `py-sdk` directory (with `PYTHONPATH` including the repo root, same as 
 
 ```bash
 export VR_API_KEY="your-api-key"
-export VR_API_URL="https://your-host/api"
 export PYTHONPATH="$(pwd)"
 
 python3 examples/sync_usage.py
 python3 examples/async_usage.py
 ```
 
-Use an API key issued by the VoidRun instance behind `VR_API_URL`.
+Use an API key from the same VoidRun deployment as the API host (hosted default, or set **`VR_API_URL`** for self-hosted).
 
 ## Development and tests
 
@@ -466,11 +466,11 @@ Set `VR_API_KEY` or pass `api_key=` to the constructor.
 
 ### "Base URL is required …"
 
-Set **`VR_API_URL`** (or **`API_URL`**). Include the correct path prefix (often `/api`) as required by your deployment.
+You cleared the base URL (for example empty **`VR_API_URL`**). Omit the variable to use the packaged default, or set **`VR_API_URL`** / **`API_URL`** (self-hosted) with the correct prefix (often `/api`).
 
 ### Unauthorized / invalid API key
 
-The key must match the VoidRun instance at `VR_API_URL`. A local `.env` pointing at `localhost` with a cloud key (or vice versa) will return 401.
+The key must match the VoidRun API you are calling (hosted default host or your self-hosted **`VR_API_URL`**). A local `.env` pointing at `localhost` with a cloud key (or vice versa) will return 401.
 
 ### Sandbox creation failures
 
@@ -488,7 +488,7 @@ List parent directories with `sandbox.fs.list_files` and confirm paths inside th
 
 Contributions are welcome; see the repository’s contributing guidelines if present.
 
-- **License:** MIT — see the `LICENSE` file.  
+- **License:** MIT: see the `LICENSE` file.  
 - **PyPI:** [voidrun](https://pypi.org/project/voidrun/)  
 - **Issues / discussions:** [GitHub](https://github.com/voidrun/py-sdk)  
 - **Contact:** support@voidrun.io (see [`pyproject.toml`](pyproject.toml) authors)

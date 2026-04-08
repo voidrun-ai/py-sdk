@@ -86,7 +86,7 @@ class VoidRun:
         self.api_key = api_key if api_key is not None else default_api_key()
         if not self.api_key:
             raise ValueError("API key is required (pass api_key= or set VR_API_KEY / API_KEY)")
-        resolved = base_url if base_url is not None else default_api_url()
+        resolved = (base_url if base_url is not None else default_api_url()).strip().rstrip("/")
         if not resolved:
             raise ValueError("Base URL is required (pass base_url= or set VR_API_URL / API_URL)")
         self.org_id = org_id if org_id is not None else default_org_id()
