@@ -3,7 +3,7 @@ from voidrun import VoidRun
 
 def main() -> None:
     vr = VoidRun()
-    sbx = vr.sandboxes.create(name="test-ts-exec").data
+    sbx = vr.create_sandbox(name="test-ts-exec")
 
     try:
         print("=== Test: TypeScript Execution ===")
@@ -21,13 +21,13 @@ function factorial(n: number): number {
 console.log(`Factorial of 5 is ${factorial(5)}`);
 """
         res = sbx.run_code(ts_code, language="typescript")
-        print("Success:", res.data.success)
-        print("Results:", res.data.results)
-        print("Stdout:\n" + res.data.stdout)
-        print("Stderr:\n" + res.data.stderr)
+        print("Success:", res.success)
+        print("Results:", res.results)
+        print("Stdout:\n" + res.stdout)
+        print("Stderr:\n" + res.stderr)
 
     finally:
-        sbx.delete()
+        sbx.remove()
         print("Done")
 
 if __name__ == "__main__":

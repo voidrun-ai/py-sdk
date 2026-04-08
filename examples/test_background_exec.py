@@ -4,7 +4,7 @@ from voidrun import VoidRun
 
 def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create(name=f"test-bg-exec-{int(time.time())}").data
+    sandbox = vr.create_sandbox(name=f"test-bg-exec-{int(time.time())}")
 
     try:
         print("[TEST 1] Start background process")
@@ -50,7 +50,7 @@ def main() -> None:
             print("wait failed:", exc)
 
     finally:
-        sandbox.delete()
+        sandbox.remove()
         print("Sandbox removed")
 
 

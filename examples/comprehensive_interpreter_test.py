@@ -7,15 +7,15 @@ def main() -> None:
 
     try:
         print("Creating sandbox...")
-        sandbox = vr.sandboxes.create(name="code-interpreter-test", cpu=1, mem=1024).data
+        sandbox = vr.create_sandbox(name="code-interpreter-test", cpu=1, mem=1024)
         print(f"Sandbox created: {sandbox.id}\n")
 
         def run(label: str, code: str, language: str) -> None:
             print(f"> {label}")
             result = sandbox.run_code(code, language=language)
-            stdout = result.data.stdout.strip() if result.data else ""
+            stdout = result.stdout.strip() if result else ""
             print(f"Output: {stdout}")
-            print(f"Success: {result.data.exit_code == 0 if result.data else False}\n")
+            print(f"Success: {result.success}\n")
 
         print("=== Test 1: Python ===")
         run("2 + 2", "print(2 + 2)", "python")
@@ -40,17 +40,17 @@ def main() -> None:
         ]
         for idx, code in enumerate(snippets, start=1):
             res = sandbox.run_code(code, language="python")
-            print(f"Snippet {idx} output: {res.data.stdout.strip()}")
+            print(f"Snippet {idx} output: {res.stdout.strip()}")
 
         print("\n=== Test 5: Error Handling ===")
         err = sandbox.run_code("invalid python syntax !@#$", language="python")
-        print("Success:", err.data.exit_code == 0)
-        print("Error:", (err.data.stderr or "")[:100])
+        print("Success:", err.success)
+        print("Error:", (err.stderr or "")[:100])
 
         print("\nAll tests completed")
     finally:
         if sandbox:
-            sandbox.delete()
+            sandbox.remove()
             print("Sandbox removed")
 
 

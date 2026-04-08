@@ -4,7 +4,7 @@ from voidrun import VoidRun
 
 async def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create(name="pty-comprehensive", envVars={"PTY_TEST": "comprehensive"}).data
+    sandbox = vr.create_sandbox(name="pty-comprehensive", envVars={"PTY_TEST": "comprehensive"})
 
     try:
         print("List sessions (should be empty)")
@@ -45,7 +45,7 @@ async def main() -> None:
         print(sandbox.pty.list().data)
 
     finally:
-        sandbox.delete()
+        sandbox.remove()
         print("Sandbox removed")
 
 

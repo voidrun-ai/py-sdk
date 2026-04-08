@@ -29,7 +29,7 @@ class Sandbox(BaseModel):
     """ # noqa: E501
     id: Optional[StrictStr] = None
     name: Optional[StrictStr] = None
-    image: Optional[StrictStr] = Field(default=None, description="Image name or ID used to create the sandbox")
+    image: Optional[StrictStr] = Field(default=None, description="Resolved image in `name:ver` format")
     cpu: Optional[StrictInt] = Field(default=None, description="Number of vCPUs allocated")
     mem: Optional[StrictInt] = Field(default=None, description="Memory in MiB")
     disk_mb: Optional[StrictInt] = Field(default=None, description="Disk size in MiB", alias="diskMB")
@@ -45,12 +45,18 @@ class Sandbox(BaseModel):
 
     @field_validator('status')
     def status_validate_enum(cls, value):
-        """Validates the enum"""
+        """Validates the enum; must match voidrun/openapi.yml Sandbox.status."""
         if value is None:
             return value
 
-        if value not in set(['running', 'stopped', 'paused', 'error']):
-            raise ValueError("must be one of enum values ('running', 'stopped', 'paused', 'error')")
+        allowed = frozenset(
+            ('running', 'stopped', 'paused', 'error', 'killed', 'deleted'),
+        )
+        if value not in allowed:
+            raise ValueError(
+                "must be one of enum values "
+                "('running', 'stopped', 'paused', 'error', 'killed', 'deleted')",
+            )
         return value
 
     model_config = ConfigDict(

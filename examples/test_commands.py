@@ -3,7 +3,7 @@ from voidrun import VoidRun
 
 def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create(name="test-commands").data
+    sandbox = vr.create_sandbox(name="test-commands")
 
     try:
         print("[TEST] Run background process")
@@ -43,7 +43,7 @@ def main() -> None:
             print("Kill failed:", exc)
 
     finally:
-        sandbox.delete()
+        sandbox.remove()
         print("Sandbox removed")
 
 

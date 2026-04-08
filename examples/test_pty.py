@@ -4,7 +4,7 @@ from voidrun import VoidRun
 
 async def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create(name="test-pty").data
+    sandbox = vr.create_sandbox(name="test-pty")
 
     try:
         print("Ephemeral PTY")
@@ -32,7 +32,7 @@ async def main() -> None:
         sandbox.pty.delete_session(str(session_id))
 
     finally:
-        sandbox.delete()
+        sandbox.remove()
         print("Sandbox removed")
 
 

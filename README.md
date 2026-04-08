@@ -759,6 +759,14 @@ Common errors:
 Run the examples:
 
 ```bash
+# Run every script under examples/ (loads py-sdk/.env if present, sets PYTHONPATH)
+chmod +x scripts/run_all_examples.sh   # once
+./scripts/run_all_examples.sh
+```
+
+Or run a single example:
+
+```bash
 # Set your API key
 export VR_API_KEY="your-api-key"
 

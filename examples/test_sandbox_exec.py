@@ -4,12 +4,12 @@ from voidrun import VoidRun
 
 def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create(
+    sandbox = vr.create_sandbox(
         name=f"exec-test-{int(time.time())}",
         cpu=1,
         mem=1024,
-        envVars={"DEBUG": "true", "LOG_LEVEL": "info"}
-    ).data
+        env_vars={"DEBUG": "true", "LOG_LEVEL": "info"},
+    )
 
     try:
         def step(title, fn):
@@ -43,7 +43,7 @@ def main() -> None:
             print("PASS:", exc)
 
     finally:
-        sandbox.delete()
+        sandbox.remove()
         print("Sandbox removed")
 
 

@@ -28,7 +28,7 @@ class CreateSandboxRequest(BaseModel):
     CreateSandboxRequest
     """ # noqa: E501
     name: Annotated[str, Field(strict=True)] = Field(description="DNS-1123 subdomain format")
-    image: Optional[StrictStr] = None
+    image: Optional[StrictStr] = Field(default=None, description="Image name in `name:ver` or `name` format. If omitted, defaults to the latest active `code` image.")
     cpu: Optional[Annotated[int, Field(le=8, strict=True, ge=1)]] = Field(default=None, description="Number of vCPUs")
     mem: Optional[Annotated[int, Field(le=16384, strict=True, ge=1024)]] = Field(default=None, description="Memory in MiB")
     org_id: Optional[StrictStr] = Field(default=None, alias="orgId")

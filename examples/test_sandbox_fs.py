@@ -4,7 +4,7 @@ from voidrun import VoidRun
 
 def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create().data
+    sandbox = vr.create_sandbox()
     fs = sandbox.fs
 
     base_dir = "/tmp/fs-e2e"
@@ -48,7 +48,7 @@ def main() -> None:
 
         print("FS test completed")
     finally:
-        sandbox.delete()
+        sandbox.remove()
 
 
 if __name__ == "__main__":

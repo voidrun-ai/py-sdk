@@ -4,7 +4,7 @@ from voidrun import VoidRun
 
 async def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create(name="watch-test").data
+    sandbox = vr.create_sandbox(name="watch-test")
 
     events = []
 
@@ -30,7 +30,7 @@ async def main() -> None:
 
         watcher.close()
     finally:
-        sandbox.delete()
+        sandbox.remove()
         print("Sandbox removed")
 
 

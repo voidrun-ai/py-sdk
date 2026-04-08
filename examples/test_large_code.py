@@ -6,8 +6,7 @@ def main():
     vr = VoidRun()
 
     print('Creating sandbox for large code tests...')
-    create_resp = vr.sandboxes.create(name='test-large-code-py')
-    sandbox = create_resp.data
+    sandbox = vr.create_sandbox(name='test-large-code-py')
 
     try:
         print('\n--- Testing Complex JavaScript Code (>1000 chars) ---')
@@ -65,7 +64,7 @@ console.log(runSimulation(30));
 
         print(f"JS Code length: {len(large_js)} characters")
         result = sandbox.run_code(large_js, language='javascript')
-        exec_result = result.data
+        exec_result = result
         print('Stdout output:\n', exec_result.stdout.strip())
         
         if "30-Day Market Simulation" in exec_result.stdout and exec_result.results == 4:
@@ -123,7 +122,7 @@ print(analyze_temperatures(generate_sensor_data(500)))
 
         print(f"Python Code length: {len(large_py)} characters")
         result = sandbox.run_code(large_py, language='python')
-        exec_result = result.data
+        exec_result = result
         print('Stdout output:\n', exec_result.stdout.strip())
 
         if "Processed 500 Days" in exec_result.stdout and exec_result.results == 500:
@@ -215,7 +214,7 @@ console.log(processTransactions(txns, 'EUR'));
 
         print(f"TS Code length: {len(large_ts)} characters")
         result = sandbox.run_code(large_ts, language='typescript')
-        exec_result = result.data
+        exec_result = result
         print('Stdout output:\n', exec_result.stdout.strip())
 
         if "Processed 250 Transactions" in exec_result.stdout and exec_result.results == 250:
@@ -229,7 +228,7 @@ console.log(processTransactions(txns, 'EUR'));
         sys.exit(1)
     finally:
         print('\nRemoving sandbox...')
-        sandbox.delete()
+        sandbox.remove()
         print('Done.')
 
 if __name__ == "__main__":

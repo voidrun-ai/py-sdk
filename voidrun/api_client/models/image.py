@@ -18,7 +18,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -27,14 +27,16 @@ class Image(BaseModel):
     """
     Image
     """ # noqa: E501
-    id: Optional[StrictStr] = Field(default=None, alias="_id")
+    id: Optional[StrictStr] = None
     name: Optional[StrictStr] = None
     tag: Optional[StrictStr] = None
+    size_gb: Optional[StrictInt] = Field(default=None, description="Virtual size in GB", alias="sizeGB")
     system: Optional[StrictBool] = None
+    active: Optional[StrictBool] = None
     org_id: Optional[StrictStr] = Field(default=None, alias="orgId")
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     created_by: Optional[StrictStr] = Field(default=None, alias="createdBy")
-    __properties: ClassVar[List[str]] = ["_id", "name", "tag", "system", "orgId", "createdAt", "createdBy"]
+    __properties: ClassVar[List[str]] = ["id", "name", "tag", "sizeGB", "system", "active", "orgId", "createdAt", "createdBy"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -87,10 +89,12 @@ class Image(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "_id": obj.get("_id"),
+            "id": obj.get("id"),
             "name": obj.get("name"),
             "tag": obj.get("tag"),
+            "sizeGB": obj.get("sizeGB"),
             "system": obj.get("system"),
+            "active": obj.get("active"),
             "orgId": obj.get("orgId"),
             "createdAt": obj.get("createdAt"),
             "createdBy": obj.get("createdBy")

@@ -6,24 +6,24 @@ def main() -> None:
     sandbox = None
 
     try:
-        sandbox = vr.sandboxes.create(
+        sandbox = vr.create_sandbox(
             name="code-interpreter-ci-test",
-            envVars={"CI": "true", "TEST_MODE": "enabled"}
-        ).data
+            env_vars={"CI": "true", "TEST_MODE": "enabled"},
+        )
 
         result = sandbox.run_code("print(5 * 7)", language="python")
-        output = (result.data.stdout or "").strip()
+        output = (result.stdout or "").strip()
         if output != "35":
             print("Unexpected output for 5 * 7:", output)
 
         result = sandbox.run_code("i = 444\nprint('Looping', i)", language="python")
-        print(result.data.stdout.strip())
+        print(result.stdout.strip())
 
         result = sandbox.run_code(
             "def factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n - 1)\n\nprint(factorial(6))",
             language="python"
         )
-        output = result.data.stdout or ""
+        output = result.stdout or ""
         numbers = [x for x in output.split() if x.isdigit()]
         if not numbers:
             print("No numeric output for factorial:", output)
@@ -33,7 +33,7 @@ def main() -> None:
         print("CI test completed successfully")
     finally:
         if sandbox:
-            sandbox.delete()
+            sandbox.remove()
             print("Sandbox removed")
 
 

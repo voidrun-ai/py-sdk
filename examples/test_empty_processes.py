@@ -4,7 +4,7 @@ from voidrun import VoidRun
 
 def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create(name="test-empty-processes").data
+    sandbox = vr.create_sandbox(name="test-empty-processes")
 
     try:
         time.sleep(3)
@@ -27,7 +27,7 @@ def main() -> None:
             print("Unexpected processes after:", processes_after)
 
     finally:
-        sandbox.delete()
+        sandbox.remove()
         print("Sandbox removed")
 
 

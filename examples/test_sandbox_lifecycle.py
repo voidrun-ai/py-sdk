@@ -1,27 +1,28 @@
 import time
+
 from voidrun import VoidRun
 
 
 def main() -> None:
     vr = VoidRun()
 
-    sandbox = vr.sandboxes.create().data
+    sandbox = vr.create_sandbox()
     print("Sandbox created:", sandbox.id)
 
-    info = vr.sandboxes.get(sandbox.id)
-    print("Sandbox info:", info.data.id)
+    info = vr.get_sandbox(sandbox.id)
+    print("Sandbox info:", info.id)
 
-    sandboxes = vr.sandboxes.list()
-    print("Total sandboxes:", len(sandboxes.data))
+    listed = vr.list_sandboxes()
+    print("Total sandboxes:", len(listed.sandboxes))
 
     time.sleep(2)
-    sandbox.delete()
+    sandbox.remove()
     print("Sandbox removed")
 
-    sandbox2 = vr.sandboxes.create().data
+    sandbox2 = vr.create_sandbox()
     print("Sandbox 2:", sandbox2.id)
     time.sleep(2)
-    sandbox2.delete()
+    sandbox2.remove()
     print("Sandbox 2 removed")
 
 

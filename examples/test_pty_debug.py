@@ -4,7 +4,7 @@ from voidrun import VoidRun
 
 async def main() -> None:
     vr = VoidRun()
-    sandbox = vr.sandboxes.create(name="test-pty-debug", envVars={"DEBUG": "pty"}).data
+    sandbox = vr.create_sandbox(name="test-pty-debug", envVars={"DEBUG": "pty"})
 
     try:
         print("Connecting to PTY...")
@@ -18,7 +18,7 @@ async def main() -> None:
         await pty.close()
 
     finally:
-        sandbox.delete()
+        sandbox.remove()
         print("Sandbox removed")
 
 
