@@ -170,6 +170,9 @@ class Sandbox:
     ) -> VoidRunResponse[ExecResponseData]:
         """Exec: pass a string command or an `ExecRequest` (ts-sdk style).
 
+        Synchronous only (waits for the command). There is no ``background`` field on ``ExecRequest``;
+        use ``sandbox.commands.run`` for detached processes and PIDs.
+
         Returns ``VoidRunResponse`` whose ``.data`` is ``ExecResponseData`` (stdout/stderr/exit_code),
         not the outer ``ExecResponse`` envelope, so use ``result.data.stdout`` not ``result.data.data.stdout``.
         """

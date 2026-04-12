@@ -32,7 +32,7 @@ The high-level API is aligned with the official **TypeScript SDK** (`create_sand
 ## Features
 
 - **Sandbox lifecycle**: Create, list, fetch, start/stop/pause/resume, and remove sandboxes (sync and async).
-- **Shell execution**: `exec` with optional `ExecRequest`; SSE streaming via `exec_stream`.
+- **Shell execution**: synchronous `exec` with optional `ExecRequest` (no `background` flag); SSE streaming via `exec_stream`; detached processes via `.commands.run`.
 - **Code interpreter**: `run_code` / `interpreter.run` return a structured **`CodeExecutionResult`** (stdout, stderr, success, exit_code, results, logs).
 - **Files**: Create, upload, download, list, move, copy, compress, extract, permissions, search, disk usage.
 - **File watching**: WebSocket-backed directory watches (async).
@@ -219,6 +219,8 @@ Return type: **`VoidRunResponse[ExecResponseData]`**: the API’s outer **`ExecR
 ```python
 print(r.data.stdout, r.data.stderr, r.data.exit_code)
 ```
+
+**`sandbox.exec` is synchronous only** — it waits for the command. Do **not** use a `background` flag on `ExecRequest`; for a PID and long-running processes, use **`sandbox.commands.run`** ([Background commands](#background-commands)).
 
 ### Streaming (`exec_stream`)
 
