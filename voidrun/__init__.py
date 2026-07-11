@@ -11,7 +11,7 @@ from .constants import (
     DEFAULT_SANDBOX_MEM,
 )
 from .interpreter import CodeExecutionResult, CodeInterpreter, Interpreter
-from .sandbox import Sandbox
+from .sandbox import Sandbox, SandboxPublicURL
 
 __all__ = [
     "AsyncVoidRun",
@@ -25,5 +25,6 @@ __all__ = [
     "ListSandboxesMeta",
     "ListSandboxesResult",
     "Sandbox",
+    "SandboxPublicURL",
     "VoidRun",
 ]

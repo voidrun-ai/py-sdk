@@ -33,30 +33,24 @@ class Sandbox(BaseModel):
     cpu: Optional[StrictInt] = Field(default=None, description="Number of vCPUs allocated")
     mem: Optional[StrictInt] = Field(default=None, description="Memory in MiB")
     disk_mb: Optional[StrictInt] = Field(default=None, description="Disk size in MiB", alias="diskMB")
-    status: Optional[StrictStr] = None
+    status: Optional[StrictStr] = Field(default=None, description="Lifecycle state. Terminal states `killed` and `deleted` may still appear in list responses for historical or cleanup rows.")
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     created_by: Optional[StrictStr] = Field(default=None, description="User ID who created the sandbox", alias="createdBy")
     org_id: Optional[StrictStr] = Field(default=None, description="Organization ID the sandbox belongs to", alias="orgId")
     env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables set on the sandbox (optional, only present if configured)", alias="envVars")
     auto_sleep: Optional[StrictBool] = Field(default=None, description="Indicates if auto-sleep is enabled", alias="autoSleep")
     region: Optional[StrictStr] = Field(default=None, description="Region where the sandbox is hosted")
-    ref_id: Optional[StrictStr] = Field(default=None, description="External reference ID", alias="refId")
-    __properties: ClassVar[List[str]] = ["id", "name", "image", "cpu", "mem", "diskMB", "status", "createdAt", "createdBy", "orgId", "envVars", "autoSleep", "region", "refId"]
+    node_id: Optional[StrictStr] = Field(default=None, description="Voidrun host that created this sandbox", alias="nodeId")
+    __properties: ClassVar[List[str]] = ["id", "name", "image", "cpu", "mem", "diskMB", "status", "createdAt", "createdBy", "orgId", "envVars", "autoSleep", "region", "nodeId"]
 
     @field_validator('status')
     def status_validate_enum(cls, value):
-        """Validates the enum; must match voidrun/openapi.yml Sandbox.status."""
+        """Validates the enum"""
         if value is None:
             return value
 
-        allowed = frozenset(
-            ('running', 'stopped', 'paused', 'error', 'killed', 'deleted'),
-        )
-        if value not in allowed:
-            raise ValueError(
-                "must be one of enum values "
-                "('running', 'stopped', 'paused', 'error', 'killed', 'deleted')",
-            )
+        if value not in set(['running', 'stopped', 'paused', 'error', 'killed', 'deleted']):
+            raise ValueError("must be one of enum values ('running', 'stopped', 'paused', 'error', 'killed', 'deleted')")
         return value
 
     model_config = ConfigDict(
@@ -123,7 +117,7 @@ class Sandbox(BaseModel):
             "envVars": obj.get("envVars"),
             "autoSleep": obj.get("autoSleep"),
             "region": obj.get("region"),
-            "refId": obj.get("refId")
+            "nodeId": obj.get("nodeId")
         })
         return _obj
 

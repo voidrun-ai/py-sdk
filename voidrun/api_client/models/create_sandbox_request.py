@@ -37,8 +37,7 @@ class CreateSandboxRequest(BaseModel):
     env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables to set on the sandbox", alias="envVars")
     auto_sleep: Optional[StrictBool] = Field(default=None, description="If true, the sandbox will be auto-paused due to inactivity", alias="autoSleep")
     region: Optional[StrictStr] = Field(default=None, description="Target region for the sandbox")
-    ref_id: Optional[StrictStr] = Field(default=None, description="External reference ID for tracking", alias="refId")
-    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars", "autoSleep", "region", "refId"]
+    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars", "autoSleep", "region"]
 
     @field_validator('name')
     def name_validate_regular_expression(cls, value):
@@ -108,7 +107,6 @@ class CreateSandboxRequest(BaseModel):
             "envVars": obj.get("envVars"),
             "autoSleep": obj.get("autoSleep"),
             "region": obj.get("region"),
-            "refId": obj.get("refId")
         })
         return _obj
 

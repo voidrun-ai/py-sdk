@@ -1500,7 +1500,7 @@ class ExecutionApi:
     ) -> ExecResponse:
         """Execute command (synchronous)
 
-        Execute a command in the sandbox and wait for the result
+        Execute a command in the sandbox and wait for the result. For a non-blocking start with a PID, use `POST /sandboxes/{id}/commands/run`.
 
         :param id: (required)
         :type id: str
@@ -1574,7 +1574,7 @@ class ExecutionApi:
     ) -> ApiResponse[ExecResponse]:
         """Execute command (synchronous)
 
-        Execute a command in the sandbox and wait for the result
+        Execute a command in the sandbox and wait for the result. For a non-blocking start with a PID, use `POST /sandboxes/{id}/commands/run`.
 
         :param id: (required)
         :type id: str
@@ -1648,7 +1648,7 @@ class ExecutionApi:
     ) -> RESTResponseType:
         """Execute command (synchronous)
 
-        Execute a command in the sandbox and wait for the result
+        Execute a command in the sandbox and wait for the result. For a non-blocking start with a PID, use `POST /sandboxes/{id}/commands/run`.
 
         :param id: (required)
         :type id: str

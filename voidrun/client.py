@@ -55,7 +55,6 @@ def _build_create_sandbox_request(
     env_vars: Optional[Dict[str, str]],
     auto_sleep: Optional[bool],
     region: Optional[str],
-    ref_id: Optional[str],
 ) -> CreateSandboxRequest:
     default_name = f"sdbx-{int(time.time() * 1000)}"
     org_clean = (org_id or "").strip() or None
@@ -70,7 +69,6 @@ def _build_create_sandbox_request(
         env_vars=env_vars,
         auto_sleep=auto_sleep,
         region=region,
-        ref_id=ref_id,
     )
 
 
@@ -118,8 +116,6 @@ class VoidRun:
         auto_sleep: Optional[bool] = None,
         autoSleep: Optional[bool] = None,
         region: Optional[str] = None,
-        ref_id: Optional[str] = None,
-        refId: Optional[str] = None,
         _owner: Optional[Any] = None,
     ) -> Sandbox:
         """_owner: internal — AsyncVoidRun passes itself so Sandbox uses the async client."""
@@ -133,7 +129,6 @@ class VoidRun:
         oid = (oid or "").strip() or None
         ev = env_vars if env_vars is not None else envVars
         asl = auto_sleep if auto_sleep is not None else autoSleep
-        rid = ref_id if ref_id is not None else refId
         uid = user_id if user_id is not None else userId
 
         req = _build_create_sandbox_request(
@@ -147,7 +142,6 @@ class VoidRun:
             env_vars=ev,
             auto_sleep=asl,
             region=region,
-            ref_id=rid,
         )
         response = self._sandboxes_api.create_sandbox_with_http_info(
             create_sandbox_request=req,
@@ -237,7 +231,6 @@ class SandboxesFacade:
             env_vars=kwargs.get("env_vars") or kwargs.get("envVars"),
             auto_sleep=kwargs.get("auto_sleep") or kwargs.get("autoSleep"),
             region=kwargs.get("region"),
-            ref_id=kwargs.get("ref_id") or kwargs.get("refId"),
         )
         response = self._api.create_sandbox_with_http_info(
             create_sandbox_request=req,
@@ -372,7 +365,6 @@ class AsyncSandboxesFacade:
             env_vars=kwargs.get("env_vars") or kwargs.get("envVars"),
             auto_sleep=kwargs.get("auto_sleep") or kwargs.get("autoSleep"),
             region=kwargs.get("region"),
-            ref_id=kwargs.get("ref_id") or kwargs.get("refId"),
         )
         response = await self._client._run_async(
             self._api.create_sandbox_with_http_info,

@@ -17,7 +17,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -28,11 +28,10 @@ class ExecRequest(BaseModel):
     """ # noqa: E501
     command: StrictStr
     args: Optional[List[StrictStr]] = None
-    timeout: Optional[StrictInt] = Field(default=30, description="Timeout in seconds (ignored if background=true)")
+    timeout: Optional[StrictInt] = Field(default=30, description="Timeout in seconds")
     env: Optional[Dict[str, StrictStr]] = None
     cwd: Optional[StrictStr] = None
-    background: Optional[StrictBool] = Field(default=False, description="If true, starts process in background and returns PID immediately")
-    __properties: ClassVar[List[str]] = ["command", "args", "timeout", "env", "cwd", "background"]
+    __properties: ClassVar[List[str]] = ["command", "args", "timeout", "env", "cwd"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -89,8 +88,7 @@ class ExecRequest(BaseModel):
             "args": obj.get("args"),
             "timeout": obj.get("timeout") if obj.get("timeout") is not None else 30,
             "env": obj.get("env"),
-            "cwd": obj.get("cwd"),
-            "background": obj.get("background") if obj.get("background") is not None else False
+            "cwd": obj.get("cwd")
         })
         return _obj
 

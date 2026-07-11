@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Optional, Union
+from dataclasses import dataclass
+from typing import Any, List, Optional, Union
 
 import httpx
 
@@ -14,6 +15,14 @@ from .fs import FS
 from .interpreter import CodeExecutionResult, CodeInterpreter
 from .pty import PTY
 from .response import VoidRunResponse
+
+
+@dataclass
+class SandboxPublicURL:
+    """One published sandbox port and its public URL."""
+
+    port: int
+    url: str
 
 
 class Sandbox:
@@ -36,7 +45,7 @@ class Sandbox:
         self.created_at = model.created_at
         self.created_by = model.created_by
         self.region = model.region
-        self.ref_id = model.ref_id
+        self.node_id = model.node_id
         self.auto_sleep = model.auto_sleep
         self.image = model.image
         self.disk_mb = model.disk_mb
@@ -270,3 +279,67 @@ class Sandbox:
             timeout=timeout,
             **kwargs,
         )
+
+    def _public_urls_request(self) -> tuple[str, dict]:
+        """URL + auth headers for the public-urls endpoint (shared by sync/async)."""
+        cfg = self._exec_api.api_client.configuration
+        url = f"{cfg.host.rstrip('/')}/sandboxes/{self.id}/public-urls"
+        headers = {"Accept": "application/json"}
+        api_key = cfg.get_api_key_with_prefix("ApiKeyAuth")
+        if api_key:
+            headers["X-API-Key"] = api_key
+        return url, headers
+
+    def get_public_urls(self, timeout: float = 15.0) -> List[SandboxPublicURL]:
+        """Public URLs for every port this sandbox publishes. Raises on HTTP >= 400."""
+        url, headers = self._public_urls_request()
+        with httpx.Client(timeout=timeout) as client:
+            resp = client.get(url, headers=headers)
+            resp.raise_for_status()
+            return _parse_public_urls(resp.json())
+
+    async def get_public_urls_async(
+        self, timeout: float = 15.0
+    ) -> List[SandboxPublicURL]:
+        url, headers = self._public_urls_request()
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            resp = await client.get(url, headers=headers)
+            resp.raise_for_status()
+            return _parse_public_urls(resp.json())
+
+    def get_public_url(self, port: int, timeout: float = 15.0) -> Optional[SandboxPublicURL]:
+        """Public URL for one published port, or ``None`` if not published."""
+        for entry in self.get_public_urls(timeout=timeout):
+            if entry.port == port:
+                return entry
+        return None
+
+    async def get_public_url_async(
+        self, port: int, timeout: float = 15.0
+    ) -> Optional[SandboxPublicURL]:
+        for entry in await self.get_public_urls_async(timeout=timeout):
+            if entry.port == port:
+                return entry
+        return None
+
+
+def _parse_public_urls(body: Any) -> List[SandboxPublicURL]:
+    data = body.get("data") if isinstance(body, dict) else None
+    if not isinstance(data, list):
+        return []
+    out: List[SandboxPublicURL] = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        raw_port = item.get("port")
+        try:
+            port = int(raw_port) if isinstance(raw_port, (int, str)) else -1
+        except (TypeError, ValueError):
+            continue
+        if not (1 <= port <= 65535):
+            continue
+        url = item.get("url")
+        if not isinstance(url, str) or not url:
+            continue
+        out.append(SandboxPublicURL(port=port, url=url))
+    return out
