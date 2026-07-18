@@ -21,18 +21,20 @@ from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class GetVersion200Response(BaseModel):
     """
     GetVersion200Response
     """ # noqa: E501
-    version: Optional[StrictStr] = None
-    commit: Optional[StrictStr] = None
-    build_time: Optional[StrictStr] = Field(default=None, alias="buildTime")
+    version: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["0.1.0"]})
+    commit: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["a1b2c3d"]})
+    build_time: Optional[StrictStr] = Field(default=None, alias="buildTime", json_schema_extra={"examples": ["2026-02-28T12:00:00Z"]})
     __properties: ClassVar[List[str]] = ["version", "commit", "buildTime"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -44,8 +46,7 @@ class GetVersion200Response(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

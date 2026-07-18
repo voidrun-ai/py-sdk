@@ -17,21 +17,23 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class GetCurrentUser200ResponseOrgsInner(BaseModel):
     """
     GetCurrentUser200ResponseOrgsInner
     """ # noqa: E501
-    id: Optional[StrictStr] = None
-    name: Optional[StrictStr] = None
+    id: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    name: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["My Organization"]})
     __properties: ClassVar[List[str]] = ["id", "name"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -43,8 +45,7 @@ class GetCurrentUser200ResponseOrgsInner(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

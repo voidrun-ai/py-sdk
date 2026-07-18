@@ -22,21 +22,23 @@ from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class GeneratedAPIKeyResponse(BaseModel):
     """
     GeneratedAPIKeyResponse
     """ # noqa: E501
-    plain_key: Optional[StrictStr] = Field(default=None, description="Only returned once at generation time", alias="plainKey")
-    key_id: Optional[StrictStr] = Field(default=None, alias="keyId")
-    key_name: Optional[StrictStr] = Field(default=None, alias="keyName")
-    org_id: Optional[StrictStr] = Field(default=None, alias="orgId")
+    plain_key: Optional[StrictStr] = Field(default=None, description="Only returned once at generation time", alias="plainKey", json_schema_extra={"examples": ["hf_1234567890abcdef"]})
+    key_id: Optional[StrictStr] = Field(default=None, alias="keyId", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    key_name: Optional[StrictStr] = Field(default=None, alias="keyName", json_schema_extra={"examples": ["CI/CD Key"]})
+    org_id: Optional[StrictStr] = Field(default=None, alias="orgId", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    expires_in: Optional[StrictStr] = Field(default=None, alias="expiresIn")
+    expires_in: Optional[StrictStr] = Field(default=None, alias="expiresIn", json_schema_extra={"examples": ["Key expires in 1 year"]})
     __properties: ClassVar[List[str]] = ["plainKey", "keyId", "keyName", "orgId", "createdAt", "expiresIn"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -48,8 +50,7 @@ class GeneratedAPIKeyResponse(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

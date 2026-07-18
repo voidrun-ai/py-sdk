@@ -22,19 +22,21 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, Strict
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class PTYSessionInfo(BaseModel):
     """
     PTYSessionInfo
     """ # noqa: E501
-    id: Optional[StrictStr] = None
+    id: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["session-123456"]})
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    clients: Optional[StrictInt] = None
-    alive: Optional[StrictBool] = None
+    clients: Optional[StrictInt] = Field(default=None, json_schema_extra={"examples": [1]})
+    alive: Optional[StrictBool] = Field(default=None, json_schema_extra={"examples": [True]})
     __properties: ClassVar[List[str]] = ["id", "createdAt", "clients", "alive"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -46,8 +48,7 @@ class PTYSessionInfo(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

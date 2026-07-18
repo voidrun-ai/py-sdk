@@ -22,20 +22,22 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, Strict
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class ProcessInfo(BaseModel):
     """
     ProcessInfo
     """ # noqa: E501
-    pid: Optional[StrictInt] = None
-    command: Optional[StrictStr] = None
+    pid: Optional[StrictInt] = Field(default=None, json_schema_extra={"examples": [1234]})
+    command: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["sleep 3600"]})
     start_time: Optional[datetime] = Field(default=None, alias="startTime")
-    running: Optional[StrictBool] = Field(default=None, description="Whether the process is currently running")
-    exit_code: Optional[StrictInt] = Field(default=None, description="Exit code if process has finished (null if still running)", alias="exitCode")
+    running: Optional[StrictBool] = Field(default=None, description="Whether the process is currently running", json_schema_extra={"examples": [True]})
+    exit_code: Optional[StrictInt] = Field(default=None, description="Exit code if process has finished (null if still running)", alias="exitCode", json_schema_extra={"examples": [0]})
     __properties: ClassVar[List[str]] = ["pid", "command", "startTime", "running", "exitCode"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -47,8 +49,7 @@ class ProcessInfo(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

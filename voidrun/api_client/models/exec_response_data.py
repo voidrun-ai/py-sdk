@@ -21,18 +21,20 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class ExecResponseData(BaseModel):
     """
     ExecResponseData
     """ # noqa: E501
-    stdout: Optional[StrictStr] = None
+    stdout: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["total 16\ndrwx------  2 root root 4096 Jan  1 12:00 .\ndrwxr-xr-x 18 root root 4096 Jan  1 12:00 ..\n"]})
     stderr: Optional[StrictStr] = None
-    exit_code: Optional[StrictInt] = Field(default=None, alias="exitCode")
+    exit_code: Optional[StrictInt] = Field(default=None, alias="exitCode", json_schema_extra={"examples": [0]})
     __properties: ClassVar[List[str]] = ["stdout", "stderr", "exitCode"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -44,8 +46,7 @@ class ExecResponseData(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

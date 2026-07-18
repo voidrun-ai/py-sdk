@@ -43,6 +43,12 @@ class ListSandboxesResult:
     meta: ListSandboxesMeta
 
 
+def _labels_query(labels: Optional[Dict[str, str]]) -> Optional[str]:
+    if not labels:
+        return None
+    return ",".join(f"{k}={v}" for k, v in labels.items())
+
+
 def _build_create_sandbox_request(
     *,
     name: Optional[str],
@@ -55,6 +61,7 @@ def _build_create_sandbox_request(
     env_vars: Optional[Dict[str, str]],
     auto_sleep: Optional[bool],
     region: Optional[str],
+    labels: Optional[Dict[str, str]] = None,
 ) -> CreateSandboxRequest:
     default_name = f"sdbx-{int(time.time() * 1000)}"
     org_clean = (org_id or "").strip() or None
@@ -69,6 +76,7 @@ def _build_create_sandbox_request(
         env_vars=env_vars,
         auto_sleep=auto_sleep,
         region=region,
+        labels=labels,
     )
 
 
@@ -116,6 +124,7 @@ class VoidRun:
         auto_sleep: Optional[bool] = None,
         autoSleep: Optional[bool] = None,
         region: Optional[str] = None,
+        labels: Optional[Dict[str, str]] = None,
         _owner: Optional[Any] = None,
     ) -> Sandbox:
         """_owner: internal — AsyncVoidRun passes itself so Sandbox uses the async client."""
@@ -142,6 +151,7 @@ class VoidRun:
             env_vars=ev,
             auto_sleep=asl,
             region=region,
+            labels=labels,
         )
         response = self._sandboxes_api.create_sandbox_with_http_info(
             create_sandbox_request=req,
@@ -160,6 +170,7 @@ class VoidRun:
         *,
         page: Optional[int] = None,
         limit: Optional[int] = None,
+        labels: Optional[Dict[str, str]] = None,
         _owner: Optional[Any] = None,
     ) -> ListSandboxesResult:
         from .sandbox import Sandbox as SandboxWrapper
@@ -168,6 +179,7 @@ class VoidRun:
         response = self._sandboxes_api.list_sandboxes_with_http_info(
             page=page,
             limit=limit,
+            labels=_labels_query(labels),
         )
         raw = response.data
         rows = raw.data or []
@@ -231,6 +243,7 @@ class SandboxesFacade:
             env_vars=kwargs.get("env_vars") or kwargs.get("envVars"),
             auto_sleep=kwargs.get("auto_sleep") or kwargs.get("autoSleep"),
             region=kwargs.get("region"),
+            labels=kwargs.get("labels"),
         )
         response = self._api.create_sandbox_with_http_info(
             create_sandbox_request=req,
@@ -293,12 +306,14 @@ class AsyncVoidRun:
         *,
         page: Optional[int] = None,
         limit: Optional[int] = None,
+        labels: Optional[Dict[str, str]] = None,
     ) -> ListSandboxesResult:
         return await self._run_async(
             partial(
                 self._sync_client.list_sandboxes,
                 page=page,
                 limit=limit,
+                labels=labels,
                 _owner=self,
             ),
         )
@@ -365,6 +380,7 @@ class AsyncSandboxesFacade:
             env_vars=kwargs.get("env_vars") or kwargs.get("envVars"),
             auto_sleep=kwargs.get("auto_sleep") or kwargs.get("autoSleep"),
             region=kwargs.get("region"),
+            labels=kwargs.get("labels"),
         )
         response = await self._client._run_async(
             self._api.create_sandbox_with_http_info,

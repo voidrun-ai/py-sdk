@@ -31,7 +31,7 @@ The high-level API is aligned with the official **TypeScript SDK** (`create_sand
 
 ## Features
 
-- **Sandbox lifecycle**: Create, list, fetch, start/stop/pause/resume, and remove sandboxes (sync and async).
+- **Sandbox lifecycle**: Create, list, fetch, start/sleep/wake (stop/pause→sleep, resume→wake), and remove sandboxes (sync and async).
 - **Shell execution**: synchronous `exec` with optional `ExecRequest` (no `background` flag); SSE streaming via `exec_stream`; detached processes via `.commands.run`.
 - **Code interpreter**: `run_code` / `interpreter.run` return a structured **`CodeExecutionResult`** (stdout, stderr, success, exit_code, results, logs).
 - **Files**: Create, upload, download, list, move, copy, compress, extract, permissions, search, disk usage.
@@ -106,11 +106,19 @@ from voidrun import VoidRun
 
 vr = VoidRun()  # uses VR_API_KEY; default base URL unless VR_API_URL / API_URL is set
 
-sandbox = vr.create_sandbox(mem=1024, cpu=1)
+sandbox = vr.create_sandbox(
+    mem=1024,
+    cpu=1,
+    labels={"env": "prod", "team": "api"},
+)
 
 result = sandbox.exec('echo "Hello from VoidRun"')
 # Exec returns VoidRunResponse whose .data is ExecResponseData
 print(result.data.stdout)
+print(sandbox.labels)
+
+listed = vr.list_sandboxes(labels={"env": "prod"})
+print(listed.meta.total)
 
 sandbox.remove()
 ```
@@ -170,9 +178,9 @@ Use the same mental model as `@voidrun/sdk` (or the internal TS client):
 
 **Recommended methods**
 
-- `create_sandbox(...)` → `Sandbox`
+- `create_sandbox(...)` → `Sandbox` (optional `labels=`)
 - `get_sandbox(sandbox_id)` → `Sandbox`
-- `list_sandboxes(page=..., limit=...)` → `ListSandboxesResult`
+- `list_sandboxes(page=..., limit=..., labels=...)` → `ListSandboxesResult`
 - `remove_sandbox(sandbox_id)` → `None`
 
 `AsyncVoidRun` exposes the same names with `await` and provides `aclose()` (and `async with` support) to shut down the thread pool used for API calls.
@@ -183,7 +191,7 @@ Create options accept both snake_case and camelCase where noted in code (e.g. `e
 
 ### `Sandbox`
 
-Notable attributes: `id`, `name`, `cpu`, `mem`, `org_id`, `status`, `env_vars`, `image`, `region`, `ref_id`, `auto_sleep`, `disk_mb`, `created_at`, `created_by`.
+Notable attributes: `id`, `name`, `cpu`, `mem`, `org_id`, `status`, `env_vars`, `image`, `region`, `ref_id`, `auto_sleep`, `disk_mb`, `labels`, `created_at`, `created_by`.
 
 Sub-clients:
 
@@ -194,7 +202,8 @@ Sub-clients:
 
 Lifecycle:
 
-- `start`, `stop`, `pause`, `resume` (and `*_async` variants where applicable)  
+- `start`, `sleep`, `wake` (and `*_async` variants)  
+- `stop` / `pause` alias `sleep`; `resume` aliases `wake`  
 - `remove()` / `remove_async()`: delete sandbox on the API  
 - `delete()` / `delete_async()`: deprecated aliases for `remove`  
 

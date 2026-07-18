@@ -49,6 +49,7 @@ class Sandbox:
         self.auto_sleep = model.auto_sleep
         self.image = model.image
         self.disk_mb = model.disk_mb
+        self.labels = model.labels
 
         self.fs = FS(self)
         self.pty = PTY(self)
@@ -104,69 +105,79 @@ class Sandbox:
     async def delete_async(self) -> None:
         await self.remove_async()
 
-    def start(self):
-        """Start a stopped sandbox (Sync)."""
+    def _sandboxes_api(self):
         from .api_client.api.sandboxes_api import SandboxesApi
-        api = SandboxesApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
-        response = api.start_sandbox_with_http_info(id=self.id)
+
+        client = (
+            self._client._api_client
+            if hasattr(self._client, "_api_client")
+            else self._client._sync_client._api_client
+        )
+        return SandboxesApi(client)
+
+    def start(self):
+        """Start a stopped/error sandbox (`POST …/start`)."""
+        response = self._sandboxes_api().start_sandbox_with_http_info(id=self.id)
         return VoidRunResponse(response.data, response)
 
     async def start_async(self):
-        """Start a stopped sandbox (Async)."""
+        """Start a stopped/error sandbox (Async)."""
         if hasattr(self._client, "_run_async"):
-            from .api_client.api.sandboxes_api import SandboxesApi
-            api = SandboxesApi(self._client._sync_client._api_client)
-            response = await self._client._run_async(api.start_sandbox_with_http_info, id=self.id)
+            api = self._sandboxes_api()
+            response = await self._client._run_async(
+                api.start_sandbox_with_http_info, id=self.id
+            )
             return VoidRunResponse(response.data, response)
         return self.start()
 
-    def stop(self):
-        """Stop a running sandbox (Sync)."""
-        from .api_client.api.sandboxes_api import SandboxesApi
-        api = SandboxesApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
-        response = api.stop_sandbox_with_http_info(id=self.id)
+    def sleep(self):
+        """Snapshot a running sandbox (`POST …/sleep`)."""
+        response = self._sandboxes_api().sleep_sandbox_with_http_info(id=self.id)
         return VoidRunResponse(response.data, response)
+
+    async def sleep_async(self):
+        if hasattr(self._client, "_run_async"):
+            api = self._sandboxes_api()
+            response = await self._client._run_async(
+                api.sleep_sandbox_with_http_info, id=self.id
+            )
+            return VoidRunResponse(response.data, response)
+        return self.sleep()
+
+    def wake(self):
+        """Restore a snapshotted sandbox (`POST …/wake`)."""
+        response = self._sandboxes_api().wake_sandbox_with_http_info(id=self.id)
+        return VoidRunResponse(response.data, response)
+
+    async def wake_async(self):
+        if hasattr(self._client, "_run_async"):
+            api = self._sandboxes_api()
+            response = await self._client._run_async(
+                api.wake_sandbox_with_http_info, id=self.id
+            )
+            return VoidRunResponse(response.data, response)
+        return self.wake()
+
+    def stop(self):
+        """Alias of `sleep()` (OpenAPI has no `/stop`)."""
+        return self.sleep()
 
     async def stop_async(self):
-        """Stop a running sandbox (Async)."""
-        if hasattr(self._client, "_run_async"):
-            from .api_client.api.sandboxes_api import SandboxesApi
-            api = SandboxesApi(self._client._sync_client._api_client)
-            response = await self._client._run_async(api.stop_sandbox_with_http_info, id=self.id)
-            return VoidRunResponse(response.data, response)
-        return self.stop()
+        return await self.sleep_async()
 
     def pause(self):
-        """Pause a running sandbox (Sync)."""
-        from .api_client.api.sandboxes_api import SandboxesApi
-        api = SandboxesApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
-        response = api.pause_sandbox_with_http_info(id=self.id)
-        return VoidRunResponse(response.data, response)
+        """Alias of `sleep()`."""
+        return self.sleep()
 
     async def pause_async(self):
-        """Pause a running sandbox (Async)."""
-        if hasattr(self._client, "_run_async"):
-            from .api_client.api.sandboxes_api import SandboxesApi
-            api = SandboxesApi(self._client._sync_client._api_client)
-            response = await self._client._run_async(api.pause_sandbox_with_http_info, id=self.id)
-            return VoidRunResponse(response.data, response)
-        return self.pause()
+        return await self.sleep_async()
 
     def resume(self):
-        """Resume a paused sandbox (Sync)."""
-        from .api_client.api.sandboxes_api import SandboxesApi
-        api = SandboxesApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
-        response = api.resume_sandbox_with_http_info(id=self.id)
-        return VoidRunResponse(response.data, response)
+        """Alias of `wake()`."""
+        return self.wake()
 
     async def resume_async(self):
-        """Resume a paused sandbox (Async)."""
-        if hasattr(self._client, "_run_async"):
-            from .api_client.api.sandboxes_api import SandboxesApi
-            api = SandboxesApi(self._client._sync_client._api_client)
-            response = await self._client._run_async(api.resume_sandbox_with_http_info, id=self.id)
-            return VoidRunResponse(response.data, response)
-        return self.resume()
+        return await self.wake_async()
 
     def exec(
         self,

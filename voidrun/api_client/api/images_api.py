@@ -1,5 +1,3 @@
-# coding: utf-8
-
 """
     VoidRun API
 
@@ -10,6 +8,7 @@
 
     Do not edit the class manually.
 """  # noqa: E501
+
 
 import warnings
 from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
@@ -590,7 +589,7 @@ class ImagesApi:
     ) -> List[Image]:
         """List images
 
-        Get all available base images
+        Get active base images visible to the organization (inactive or superseded images are omitted)
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -654,7 +653,7 @@ class ImagesApi:
     ) -> ApiResponse[List[Image]]:
         """List images
 
-        Get all available base images
+        Get active base images visible to the organization (inactive or superseded images are omitted)
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -718,7 +717,7 @@ class ImagesApi:
     ) -> RESTResponseType:
         """List images
 
-        Get all available base images
+        Get active base images visible to the organization (inactive or superseded images are omitted)
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request

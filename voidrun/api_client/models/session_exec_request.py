@@ -22,18 +22,19 @@ from typing import Any, ClassVar, Dict, List, Optional
 from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class SessionExecRequest(BaseModel):
     """
     SessionExecRequest
     """ # noqa: E501
-    action: StrictStr
-    session_id: Optional[StrictStr] = Field(default=None, description="Required for all actions except create", alias="sessionId")
-    shell: Optional[StrictStr] = None
-    command: Optional[StrictStr] = Field(default=None, description="Required when action is `exec`")
-    input: Optional[StrictStr] = Field(default=None, description="Input text when action is `input`")
-    cols: Optional[Annotated[int, Field(le=500, strict=True, ge=1)]] = Field(default=None, description="Required when action is `resize`")
-    rows: Optional[Annotated[int, Field(le=200, strict=True, ge=1)]] = Field(default=None, description="Required when action is `resize`")
+    action: StrictStr = Field(json_schema_extra={"examples": ["create"]})
+    session_id: Optional[StrictStr] = Field(default=None, description="Required for all actions except create", alias="sessionId", json_schema_extra={"examples": ["sess-1a2b3c4d5e6f7788"]})
+    shell: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["/bin/bash"]})
+    command: Optional[StrictStr] = Field(default=None, description="Required when action is `exec`", json_schema_extra={"examples": ["ls -la"]})
+    input: Optional[StrictStr] = Field(default=None, description="Input text when action is `input`", json_schema_extra={"examples": ["y\n"]})
+    cols: Optional[Annotated[int, Field(le=500, strict=True, ge=1)]] = Field(default=None, description="Required when action is `resize`", json_schema_extra={"examples": [120]})
+    rows: Optional[Annotated[int, Field(le=200, strict=True, ge=1)]] = Field(default=None, description="Required when action is `resize`", json_schema_extra={"examples": [40]})
     __properties: ClassVar[List[str]] = ["action", "sessionId", "shell", "command", "input", "cols", "rows"]
 
     @field_validator('action')
@@ -44,7 +45,8 @@ class SessionExecRequest(BaseModel):
         return value
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -56,8 +58,7 @@ class SessionExecRequest(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

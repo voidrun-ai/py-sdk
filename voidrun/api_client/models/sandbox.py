@@ -20,28 +20,32 @@ import json
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class Sandbox(BaseModel):
     """
     Sandbox
     """ # noqa: E501
-    id: Optional[StrictStr] = None
-    name: Optional[StrictStr] = None
-    image: Optional[StrictStr] = Field(default=None, description="Resolved image in `name:ver` format")
-    cpu: Optional[StrictInt] = Field(default=None, description="Number of vCPUs allocated")
-    mem: Optional[StrictInt] = Field(default=None, description="Memory in MiB")
-    disk_mb: Optional[StrictInt] = Field(default=None, description="Disk size in MiB", alias="diskMB")
-    status: Optional[StrictStr] = Field(default=None, description="Lifecycle state. Terminal states `killed` and `deleted` may still appear in list responses for historical or cleanup rows.")
+    id: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    name: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["vm-01"]})
+    image: Optional[StrictStr] = Field(default=None, description="Resolved image in `name:ver` format", json_schema_extra={"examples": ["code:1.0.42"]})
+    cpu: Optional[StrictInt] = Field(default=None, description="Number of vCPUs allocated", json_schema_extra={"examples": [2]})
+    mem: Optional[StrictInt] = Field(default=None, description="Memory in MiB", json_schema_extra={"examples": [2048]})
+    disk_mb: Optional[StrictInt] = Field(default=None, description="Disk size in MiB", alias="diskMB", json_schema_extra={"examples": [5120]})
+    status: Optional[StrictStr] = Field(default=None, description="Lifecycle state. Terminal states `killed` and `deleted` may still appear in list responses for historical or cleanup rows.", json_schema_extra={"examples": ["running"]})
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    created_by: Optional[StrictStr] = Field(default=None, description="User ID who created the sandbox", alias="createdBy")
-    org_id: Optional[StrictStr] = Field(default=None, description="Organization ID the sandbox belongs to", alias="orgId")
-    env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables set on the sandbox (optional, only present if configured)", alias="envVars")
-    auto_sleep: Optional[StrictBool] = Field(default=None, description="Indicates if auto-sleep is enabled", alias="autoSleep")
-    region: Optional[StrictStr] = Field(default=None, description="Region where the sandbox is hosted")
-    node_id: Optional[StrictStr] = Field(default=None, description="Voidrun host that created this sandbox", alias="nodeId")
-    __properties: ClassVar[List[str]] = ["id", "name", "image", "cpu", "mem", "diskMB", "status", "createdAt", "createdBy", "orgId", "envVars", "autoSleep", "region", "nodeId"]
+    created_by: Optional[StrictStr] = Field(default=None, description="User ID who created the sandbox", alias="createdBy", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    org_id: Optional[StrictStr] = Field(default=None, description="Organization ID the sandbox belongs to", alias="orgId", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables set on the sandbox (optional, only present if configured)", alias="envVars", json_schema_extra={"examples": [{"DEBUG": "true", "LOG_LEVEL": "info"}]})
+    auto_sleep: Optional[StrictBool] = Field(default=None, description="Indicates if auto-sleep is enabled", alias="autoSleep", json_schema_extra={"examples": [True]})
+    region: Optional[StrictStr] = Field(default=None, description="Region where the sandbox is hosted", json_schema_extra={"examples": ["us-east-1"]})
+    node_id: Optional[StrictStr] = Field(default=None, description="Voidrun host that created this sandbox", alias="nodeId", json_schema_extra={"examples": ["host-fra-01"]})
+    publish_ports: Optional[List[Annotated[int, Field(le=65535, strict=True, ge=1)]]] = Field(default=None, description="Ports exposed through the public gateway. Empty when the sandbox is not publicly reachable.", alias="publishPorts", json_schema_extra={"examples": [[8080]]})
+    labels: Optional[Dict[str, StrictStr]] = Field(default=None, description="Key-value labels attached at creation (immutable). Only present if set. See `GET /sandboxes` `labels` query parameter for filtering.", json_schema_extra={"examples": [{"env": "prod", "team": "backend"}]})
+    __properties: ClassVar[List[str]] = ["id", "name", "image", "cpu", "mem", "diskMB", "status", "createdAt", "createdBy", "orgId", "envVars", "autoSleep", "region", "nodeId", "publishPorts", "labels"]
 
     @field_validator('status')
     def status_validate_enum(cls, value):
@@ -49,12 +53,13 @@ class Sandbox(BaseModel):
         if value is None:
             return value
 
-        if value not in set(['running', 'stopped', 'paused', 'error', 'killed', 'deleted']):
-            raise ValueError("must be one of enum values ('running', 'stopped', 'paused', 'error', 'killed', 'deleted')")
+        if value not in set(['running', 'snapshotted', 'error', 'killed', 'deleted']):
+            raise ValueError("must be one of enum values ('running', 'snapshotted', 'error', 'killed', 'deleted')")
         return value
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -66,8 +71,7 @@ class Sandbox(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
@@ -117,7 +121,9 @@ class Sandbox(BaseModel):
             "envVars": obj.get("envVars"),
             "autoSleep": obj.get("autoSleep"),
             "region": obj.get("region"),
-            "nodeId": obj.get("nodeId")
+            "nodeId": obj.get("nodeId"),
+            "publishPorts": obj.get("publishPorts"),
+            "labels": obj.get("labels")
         })
         return _obj
 

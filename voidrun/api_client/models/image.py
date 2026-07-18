@@ -22,24 +22,26 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, Strict
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class Image(BaseModel):
     """
     Image
     """ # noqa: E501
-    id: Optional[StrictStr] = None
-    name: Optional[StrictStr] = None
-    tag: Optional[StrictStr] = None
-    size_gb: Optional[StrictInt] = Field(default=None, description="Virtual size in GB", alias="sizeGB")
-    system: Optional[StrictBool] = None
-    active: Optional[StrictBool] = None
-    org_id: Optional[StrictStr] = Field(default=None, alias="orgId")
+    id: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    name: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["ubuntu-22.04"]})
+    tag: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["latest"]})
+    size_gb: Optional[StrictInt] = Field(default=None, description="Virtual size in GB", alias="sizeGB", json_schema_extra={"examples": [20]})
+    system: Optional[StrictBool] = Field(default=None, json_schema_extra={"examples": [False]})
+    active: Optional[StrictBool] = Field(default=None, json_schema_extra={"examples": [True]})
+    org_id: Optional[StrictStr] = Field(default=None, alias="orgId", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
-    created_by: Optional[StrictStr] = Field(default=None, alias="createdBy")
+    created_by: Optional[StrictStr] = Field(default=None, alias="createdBy", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
     __properties: ClassVar[List[str]] = ["id", "name", "tag", "sizeGB", "system", "active", "orgId", "createdAt", "createdBy"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -51,8 +53,7 @@ class Image(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

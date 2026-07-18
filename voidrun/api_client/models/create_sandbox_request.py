@@ -22,32 +22,36 @@ from typing import Any, ClassVar, Dict, List, Optional
 from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class CreateSandboxRequest(BaseModel):
     """
     CreateSandboxRequest
     """ # noqa: E501
-    name: Annotated[str, Field(strict=True)] = Field(description="DNS-1123 subdomain format")
-    image: Optional[StrictStr] = Field(default=None, description="Image name in `name:ver` or `name` format. If omitted, defaults to the latest active `code` image.")
-    cpu: Optional[Annotated[int, Field(le=8, strict=True, ge=1)]] = Field(default=None, description="Number of vCPUs")
-    mem: Optional[Annotated[int, Field(le=16384, strict=True, ge=1024)]] = Field(default=None, description="Memory in MiB")
-    org_id: Optional[StrictStr] = Field(default=None, alias="orgId")
-    user_id: Optional[StrictStr] = Field(default=None, alias="userId")
-    sync: Optional[StrictBool] = Field(default=True, description="If true (default), creation blocks until the agent responds (fast readiness check, ~2s timeout)")
-    env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables to set on the sandbox", alias="envVars")
-    auto_sleep: Optional[StrictBool] = Field(default=None, description="If true, the sandbox will be auto-paused due to inactivity", alias="autoSleep")
-    region: Optional[StrictStr] = Field(default=None, description="Target region for the sandbox")
-    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars", "autoSleep", "region"]
+    name: Annotated[str, Field(strict=True)] = Field(description="DNS-1123 subdomain format", json_schema_extra={"examples": ["vm-01"]})
+    image: Optional[StrictStr] = Field(default=None, description="Image name in `name:ver` or `name` format. If omitted, defaults to the latest active `code` image.", json_schema_extra={"examples": ["code"]})
+    cpu: Optional[Annotated[int, Field(le=8, strict=True, ge=1)]] = Field(default=None, description="Number of vCPUs", json_schema_extra={"examples": [2]})
+    mem: Optional[Annotated[int, Field(le=16384, strict=True, ge=1024)]] = Field(default=None, description="Memory in MiB", json_schema_extra={"examples": [2048]})
+    org_id: Optional[StrictStr] = Field(default=None, description="Organization that owns the sandbox. When omitted, derived from the authenticated API key (the key's org). When provided, must match the key's organization or the request is rejected.", alias="orgId", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    user_id: Optional[StrictStr] = Field(default=None, description="User attributed as the sandbox creator. When omitted, derived from the API key (typically the key creator). When provided, must be an owner or member of the resolved org or the request is rejected.", alias="userId", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    sync: Optional[StrictBool] = Field(default=True, description="If true (default), creation blocks until the agent responds (fast readiness check, ~2s timeout)", json_schema_extra={"examples": [True]})
+    env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables to set on the sandbox", alias="envVars", json_schema_extra={"examples": [{"DEBUG": "true", "LOG_LEVEL": "info"}]})
+    auto_sleep: Optional[StrictBool] = Field(default=None, description="If true, the sandbox is auto-snapshotted after idle and wakes on the next request", alias="autoSleep", json_schema_extra={"examples": [True]})
+    region: Optional[StrictStr] = Field(default=None, description="Target region for the sandbox", json_schema_extra={"examples": ["eu"]})
+    publish_ports: Optional[List[Annotated[int, Field(le=65535, strict=True, ge=1)]]] = Field(default=None, description="Sandbox ports to expose through the public gateway. Each entry is published as a separate public URL once the VM is running.", alias="publishPorts", json_schema_extra={"examples": [[8080, 3000]]})
+    labels: Optional[Dict[str, Annotated[str, Field(strict=True, max_length=20)]]] = Field(default=None, description="Key-value labels attached at creation. Immutable after the sandbox is created. Max 5 labels; keys and values may each contain up to 20 characters. Keys match `^[a-z0-9]([-a-z0-9_]*[a-z0-9])?$`; neither keys nor values may contain `,` or `=`.", json_schema_extra={"examples": [{"env": "prod", "team": "backend"}]})
+    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars", "autoSleep", "region", "publishPorts", "labels"]
 
-    @field_validator('name')
+    @field_validator('name', mode="before")
     def name_validate_regular_expression(cls, value):
         """Validates the regular expression"""
-        if not re.match(r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$", value):
+        if isinstance(value, str) and not re.match(r"^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$", value):
             raise ValueError(r"must validate the regular expression /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/")
         return value
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -59,8 +63,7 @@ class CreateSandboxRequest(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
@@ -107,6 +110,8 @@ class CreateSandboxRequest(BaseModel):
             "envVars": obj.get("envVars"),
             "autoSleep": obj.get("autoSleep"),
             "region": obj.get("region"),
+            "publishPorts": obj.get("publishPorts"),
+            "labels": obj.get("labels")
         })
         return _obj
 

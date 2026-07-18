@@ -21,20 +21,22 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, Strict
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class SessionExecResponse(BaseModel):
     """
     SessionExecResponse
     """ # noqa: E501
-    success: Optional[StrictBool] = None
-    session_id: Optional[StrictStr] = Field(default=None, alias="sessionId")
-    output: Optional[StrictStr] = None
-    error: Optional[StrictStr] = None
-    exit_code: Optional[StrictInt] = Field(default=None, alias="exitCode")
+    success: Optional[StrictBool] = Field(default=None, json_schema_extra={"examples": [True]})
+    session_id: Optional[StrictStr] = Field(default=None, alias="sessionId", json_schema_extra={"examples": ["sess-1a2b3c4d5e6f7788"]})
+    output: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["command output"]})
+    error: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": [""]})
+    exit_code: Optional[StrictInt] = Field(default=None, alias="exitCode", json_schema_extra={"examples": [0]})
     __properties: ClassVar[List[str]] = ["success", "sessionId", "output", "error", "exitCode"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -46,8 +48,7 @@ class SessionExecResponse(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

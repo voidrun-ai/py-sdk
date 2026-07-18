@@ -22,24 +22,26 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class Organization(BaseModel):
     """
     Organization
     """ # noqa: E501
-    id: Optional[StrictStr] = None
-    name: Optional[StrictStr] = None
-    owner_id: Optional[StrictStr] = Field(default=None, alias="ownerId")
+    id: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
+    name: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["My Organization"]})
+    owner_id: Optional[StrictStr] = Field(default=None, alias="ownerId", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})
     members: Optional[List[StrictStr]] = None
-    plan: Optional[StrictStr] = None
-    usage: Optional[StrictInt] = None
+    plan: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["free"]})
+    usage: Optional[StrictInt] = Field(default=None, json_schema_extra={"examples": [5]})
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     created_by: Optional[StrictStr] = Field(default=None, alias="createdBy")
     updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
     __properties: ClassVar[List[str]] = ["id", "name", "ownerId", "members", "plan", "usage", "createdAt", "createdBy", "updatedAt"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -51,8 +53,7 @@ class Organization(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

@@ -22,16 +22,17 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_v
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class FileEvent(BaseModel):
     """
     FileEvent
     """ # noqa: E501
-    type: Optional[StrictStr] = Field(default=None, description="Type of filesystem event")
-    path: Optional[StrictStr] = Field(default=None, description="Absolute path to the file")
-    old_path: Optional[StrictStr] = Field(default=None, description="Previous path for rename events (optional)", alias="oldPath")
-    size: Optional[StrictInt] = Field(default=None, description="File size in bytes (optional)")
-    timestamp: Optional[datetime] = Field(default=None, description="When the event occurred")
+    type: Optional[StrictStr] = Field(default=None, description="Type of filesystem event", json_schema_extra={"examples": ["created"]})
+    path: Optional[StrictStr] = Field(default=None, description="Absolute path to the file", json_schema_extra={"examples": ["/app/logs/app.log"]})
+    old_path: Optional[StrictStr] = Field(default=None, description="Previous path for rename events (optional)", alias="oldPath", json_schema_extra={"examples": ["/app/logs/app.log.old"]})
+    size: Optional[StrictInt] = Field(default=None, description="File size in bytes (optional)", json_schema_extra={"examples": [1024]})
+    timestamp: Optional[datetime] = Field(default=None, description="When the event occurred", json_schema_extra={"examples": ["2024-01-27T09:12:34Z"]})
     __properties: ClassVar[List[str]] = ["type", "path", "oldPath", "size", "timestamp"]
 
     @field_validator('type')
@@ -45,7 +46,8 @@ class FileEvent(BaseModel):
         return value
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -57,8 +59,7 @@ class FileEvent(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

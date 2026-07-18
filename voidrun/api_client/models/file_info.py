@@ -22,21 +22,23 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, Strict
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class FileInfo(BaseModel):
     """
     FileInfo
     """ # noqa: E501
-    name: Optional[StrictStr] = None
-    path: Optional[StrictStr] = None
-    size: Optional[StrictInt] = None
-    mode: Optional[StrictStr] = None
-    is_dir: Optional[StrictBool] = Field(default=None, alias="isDir")
+    name: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["file.txt"]})
+    path: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["/root/file.txt"]})
+    size: Optional[StrictInt] = Field(default=None, json_schema_extra={"examples": [1024]})
+    mode: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["420"]})
+    is_dir: Optional[StrictBool] = Field(default=None, alias="isDir", json_schema_extra={"examples": [False]})
     mod_time: Optional[datetime] = Field(default=None, alias="modTime")
     __properties: ClassVar[List[str]] = ["name", "path", "size", "mode", "isDir", "modTime"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -48,8 +50,7 @@ class FileInfo(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:

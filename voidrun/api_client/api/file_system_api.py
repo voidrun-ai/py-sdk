@@ -1,5 +1,3 @@
-# coding: utf-8
-
 """
     VoidRun API
 
@@ -10,6 +8,7 @@
 
     Do not edit the class manually.
 """  # noqa: E501
+
 
 import warnings
 from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
@@ -2146,7 +2145,7 @@ class FileSystemApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> bytearray:
+    ) -> bytes:
         """Download file
 
         Download a file from the sandbox
@@ -2187,7 +2186,7 @@ class FileSystemApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bytearray",
+            '200': "bytes",
             '401': "ErrorResponse",
             '404': "ErrorResponse",
         }
@@ -2219,7 +2218,7 @@ class FileSystemApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[bytearray]:
+    ) -> ApiResponse[bytes]:
         """Download file
 
         Download a file from the sandbox
@@ -2260,7 +2259,7 @@ class FileSystemApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bytearray",
+            '200': "bytes",
             '401': "ErrorResponse",
             '404': "ErrorResponse",
         }
@@ -2333,7 +2332,7 @@ class FileSystemApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bytearray",
+            '200': "bytes",
             '401': "ErrorResponse",
             '404': "ErrorResponse",
         }
@@ -4814,7 +4813,7 @@ class FileSystemApi:
         :param path: (required)
         :type path: str
         :param body: (required)
-        :type body: bytearray
+        :type body: bytes
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -4891,7 +4890,7 @@ class FileSystemApi:
         :param path: (required)
         :type path: str
         :param body: (required)
-        :type body: bytearray
+        :type body: bytes
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -4968,7 +4967,7 @@ class FileSystemApi:
         :param path: (required)
         :type path: str
         :param body: (required)
-        :type body: bytearray
+        :type body: bytes
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of

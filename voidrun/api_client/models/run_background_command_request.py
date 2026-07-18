@@ -22,19 +22,21 @@ from typing import Any, ClassVar, Dict, List, Optional
 from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
+from pydantic_core import to_jsonable_python
 
 class RunBackgroundCommandRequest(BaseModel):
     """
     RunBackgroundCommandRequest
     """ # noqa: E501
-    command: StrictStr
+    command: StrictStr = Field(json_schema_extra={"examples": ["sleep 3600"]})
     env: Optional[Dict[str, StrictStr]] = None
-    cwd: Optional[StrictStr] = None
-    timeout: Optional[Annotated[int, Field(le=900, strict=True, ge=0)]] = Field(default=None, description="Command timeout in seconds (0 = no timeout, max 900)")
+    cwd: Optional[StrictStr] = Field(default=None, json_schema_extra={"examples": ["/root"]})
+    timeout: Optional[Annotated[int, Field(le=900, strict=True, ge=0)]] = Field(default=None, description="Command timeout in seconds (0 = no timeout, max 900)", json_schema_extra={"examples": [30]})
     __properties: ClassVar[List[str]] = ["command", "env", "cwd", "timeout"]
 
     model_config = ConfigDict(
-        populate_by_name=True,
+        validate_by_name=True,
+        validate_by_alias=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
@@ -46,8 +48,7 @@ class RunBackgroundCommandRequest(BaseModel):
 
     def to_json(self) -> str:
         """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        return json.dumps(to_jsonable_python(self.to_dict()))
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
