@@ -110,18 +110,28 @@ sandbox = vr.create_sandbox(
     mem=1024,
     cpu=1,
     labels={"env": "prod", "team": "api"},
+    publish_ports=[8080],  # expose ports as public URLs (set at create time only)
 )
 
 result = sandbox.exec('echo "Hello from VoidRun"')
 # Exec returns VoidRunResponse whose .data is ExecResponseData
 print(result.data.stdout)
 print(sandbox.labels)
+print(sandbox.publish_ports)
+
+# Public URLs are only available for ports declared at creation
+print(sandbox.get_public_urls())
 
 listed = vr.list_sandboxes(labels={"env": "prod"})
 print(listed.meta.total)
 
 sandbox.remove()
 ```
+
+`publish_ports` (alias `publishPorts`) must be set at creation to expose ports
+as public HTTPS URLs. Pass up to **4** ports (each `1–65535`, no duplicates);
+the created sandbox echoes them on `sandbox.publish_ports`. Ports not published
+at creation are not reachable via `get_public_urls()`.
 
 ### Async
 
@@ -178,7 +188,7 @@ Use the same mental model as `@voidrun/sdk` (or the internal TS client):
 
 **Recommended methods**
 
-- `create_sandbox(...)` → `Sandbox` (optional `labels=`)
+- `create_sandbox(...)` → `Sandbox` (optional `labels=`, `publish_ports=`)
 - `get_sandbox(sandbox_id)` → `Sandbox`
 - `list_sandboxes(page=..., limit=..., labels=...)` → `ListSandboxesResult`
 - `remove_sandbox(sandbox_id)` → `None`
@@ -191,7 +201,7 @@ Create options accept both snake_case and camelCase where noted in code (e.g. `e
 
 ### `Sandbox`
 
-Notable attributes: `id`, `name`, `cpu`, `mem`, `org_id`, `status`, `env_vars`, `image`, `region`, `ref_id`, `auto_sleep`, `disk_mb`, `labels`, `created_at`, `created_by`.
+Notable attributes: `id`, `name`, `cpu`, `mem`, `org_id`, `status`, `env_vars`, `image`, `region`, `ref_id`, `auto_sleep`, `disk_mb`, `labels`, `publish_ports`, `created_at`, `created_by`.
 
 Sub-clients:
 

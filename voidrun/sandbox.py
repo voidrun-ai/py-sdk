@@ -50,6 +50,7 @@ class Sandbox:
         self.image = model.image
         self.disk_mb = model.disk_mb
         self.labels = model.labels
+        self.publish_ports = model.publish_ports
 
         self.fs = FS(self)
         self.pty = PTY(self)
