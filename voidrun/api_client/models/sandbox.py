@@ -34,7 +34,7 @@ class Sandbox(BaseModel):
     image: Optional[StrictStr] = Field(default=None, description="Resolved image in `name:ver` format", json_schema_extra={"examples": ["code:1.0.42"]})
     cpu: Optional[StrictInt] = Field(default=None, description="Number of vCPUs allocated", json_schema_extra={"examples": [2]})
     mem: Optional[StrictInt] = Field(default=None, description="Memory in MiB", json_schema_extra={"examples": [2048]})
-    disk_mb: Optional[StrictInt] = Field(default=None, description="Disk size in MiB", alias="diskMB", json_schema_extra={"examples": [5120]})
+    disk_mb: Optional[StrictInt] = Field(default=None, description="Disk size in MiB", alias="diskMB", json_schema_extra={"examples": [10240]})
     status: Optional[StrictStr] = Field(default=None, description="Lifecycle state. Terminal states `killed` and `deleted` may still appear in list responses for historical or cleanup rows.", json_schema_extra={"examples": ["running"]})
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     created_by: Optional[StrictStr] = Field(default=None, description="User ID who created the sandbox", alias="createdBy", json_schema_extra={"examples": ["65ae1234567890abcdef1234"]})

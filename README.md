@@ -90,7 +90,7 @@ Exported from `voidrun`:
 
 | Constant | Value | Meaning |
 |----------|-------|---------|
-| `DEFAULT_API_BASE_URL` | `https://platform.void-run.com/api` | Default API host when `VR_API_URL` / `API_URL` are unset. |
+| `DEFAULT_API_BASE_URL` | `https://api.void-run.com/api` | Default API host when `VR_API_URL` / `API_URL` are unset. |
 | `DEFAULT_SANDBOX_IMAGE` | `"code"` | Default image id when creating a sandbox without `image=`. |
 | `DEFAULT_SANDBOX_CPU` | `1` | Default CPU count. |
 | `DEFAULT_SANDBOX_MEM` | `1024` | Default memory in MB. |
