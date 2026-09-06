@@ -10,7 +10,7 @@ DEFAULT_SANDBOX_CPU = 1
 DEFAULT_SANDBOX_MEM = 1024
 
 # Same default host as ts-sdk `BASE_PATH` (hosted VoidRun API).
-DEFAULT_API_BASE_URL = "https://platform.void-run.com/api"
+DEFAULT_API_BASE_URL = "https://api.void-run.com/api"
 
 
 def default_api_key() -> Optional[str]:
