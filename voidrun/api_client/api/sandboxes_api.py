@@ -23,6 +23,7 @@ from voidrun.api_client.models.api_response_sandboxes_list import ApiResponseSan
 from voidrun.api_client.models.create_sandbox201_response import CreateSandbox201Response
 from voidrun.api_client.models.create_sandbox_request import CreateSandboxRequest
 from voidrun.api_client.models.success_response import SuccessResponse
+from voidrun.api_client.models.update_sandbox_request import UpdateSandboxRequest
 
 from voidrun.api_client.api_client import ApiClient, RequestSerialized
 from voidrun.api_client.api_response import ApiResponse
@@ -843,6 +844,218 @@ class SandboxesApi:
 
         return self.api_client.param_serialize(
             method='GET',
+            resource_path='/sandboxes/{id}',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def update_sandbox(
+        self,
+        id: StrictStr,
+        update_sandbox_request: UpdateSandboxRequest,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponseSandbox:
+        """Update sandbox
+
+        Update mutable sandbox fields. Currently autoSleep only.
+
+        :param id: (required)
+        :param update_sandbox_request: (required)
+        :type update_sandbox_request: UpdateSandboxRequest
+        """  # noqa: E501
+
+        _param = self._update_sandbox_serialize(
+            id=id,
+            update_sandbox_request=update_sandbox_request,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "ApiResponseSandbox",
+            '400': "ErrorResponse",
+            '401': "ErrorResponse",
+            '404': "ErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def update_sandbox_with_http_info(
+        self,
+        id: StrictStr,
+        update_sandbox_request: UpdateSandboxRequest,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[ApiResponseSandbox]:
+        """Update sandbox
+
+        Update mutable sandbox fields. Currently autoSleep only.
+        """  # noqa: E501
+
+        _param = self._update_sandbox_serialize(
+            id=id,
+            update_sandbox_request=update_sandbox_request,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "ApiResponseSandbox",
+            '400': "ErrorResponse",
+            '401': "ErrorResponse",
+            '404': "ErrorResponse",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def update_sandbox_without_preload_content(
+        self,
+        id: StrictStr,
+        update_sandbox_request: UpdateSandboxRequest,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Update sandbox
+
+        Update mutable sandbox fields. Currently autoSleep only.
+        """  # noqa: E501
+
+        _param = self._update_sandbox_serialize(
+            id=id,
+            update_sandbox_request=update_sandbox_request,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _update_sandbox_serialize(
+        self,
+        id,
+        update_sandbox_request,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        if id is not None:
+            _path_params['id'] = id
+        if update_sandbox_request is not None:
+            _body_params = update_sandbox_request
+
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+        if _content_type:
+            _header_params['Content-Type'] = _content_type
+        else:
+            _default_content_type = (
+                self.api_client.select_header_content_type(
+                    [
+                        'application/json'
+                    ]
+                )
+            )
+            if _default_content_type is not None:
+                _header_params['Content-Type'] = _default_content_type
+
+        _auth_settings: List[str] = [
+            'ApiKeyAuth'
+        ]
+
+        return self.api_client.param_serialize(
+            method='PATCH',
             resource_path='/sandboxes/{id}',
             path_params=_path_params,
             query_params=_query_params,
