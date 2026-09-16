@@ -89,6 +89,7 @@ __all__ = [
     "StartWatch200ResponseData",
     "StartWatchRequest",
     "SuccessResponse",
+    "UpdateSandboxRequest",
 ]
 
 # import apis into sdk package
@@ -167,4 +168,5 @@ from voidrun.api_client.models.start_watch200_response import StartWatch200Respo
 from voidrun.api_client.models.start_watch200_response_data import StartWatch200ResponseData as StartWatch200ResponseData
 from voidrun.api_client.models.start_watch_request import StartWatchRequest as StartWatchRequest
 from voidrun.api_client.models.success_response import SuccessResponse as SuccessResponse
+from voidrun.api_client.models.update_sandbox_request import UpdateSandboxRequest as UpdateSandboxRequest
 

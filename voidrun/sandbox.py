@@ -150,6 +150,36 @@ class Sandbox:
         response = self._sandboxes_api().wake_sandbox_with_http_info(id=self.id)
         return VoidRunResponse(response.data, response)
 
+    def update(self, *, auto_sleep: Optional[bool] = None):
+        """Patch mutable fields (`PATCH …/sandboxes/{id}`). Currently `auto_sleep` only."""
+        from .api_client.models.update_sandbox_request import UpdateSandboxRequest
+
+        req = UpdateSandboxRequest(auto_sleep=auto_sleep)
+        response = self._sandboxes_api().update_sandbox_with_http_info(
+            id=self.id, update_sandbox_request=req
+        )
+        data = getattr(response.data, "data", None)
+        if data is not None and getattr(data, "auto_sleep", None) is not None:
+            self.auto_sleep = data.auto_sleep
+        return VoidRunResponse(response.data, response)
+
+    async def update_async(self, *, auto_sleep: Optional[bool] = None):
+        if hasattr(self._client, "_run_async"):
+            from .api_client.models.update_sandbox_request import UpdateSandboxRequest
+
+            api = self._sandboxes_api()
+            req = UpdateSandboxRequest(auto_sleep=auto_sleep)
+            response = await self._client._run_async(
+                api.update_sandbox_with_http_info,
+                id=self.id,
+                update_sandbox_request=req,
+            )
+            data = getattr(response.data, "data", None)
+            if data is not None and getattr(data, "auto_sleep", None) is not None:
+                self.auto_sleep = data.auto_sleep
+            return VoidRunResponse(response.data, response)
+        return self.update(auto_sleep=auto_sleep)
+
     async def wake_async(self):
         if hasattr(self._client, "_run_async"):
             api = self._sandboxes_api()
