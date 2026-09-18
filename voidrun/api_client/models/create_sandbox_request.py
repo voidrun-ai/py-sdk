@@ -24,6 +24,18 @@ from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
 
+class SandboxPort(BaseModel):
+    protocol: StrictStr
+    port: Annotated[int, Field(le=65535, strict=True, ge=1)]
+
+    model_config = ConfigDict(
+        validate_by_name=True,
+        validate_by_alias=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
+
+
 class CreateSandboxRequest(BaseModel):
     """
     CreateSandboxRequest
@@ -38,9 +50,9 @@ class CreateSandboxRequest(BaseModel):
     env_vars: Optional[Dict[str, StrictStr]] = Field(default=None, description="Environment variables to set on the sandbox", alias="envVars", json_schema_extra={"examples": [{"DEBUG": "true", "LOG_LEVEL": "info"}]})
     auto_sleep: Optional[StrictBool] = Field(default=None, description="If true, the sandbox is auto-snapshotted after idle and wakes on the next request", alias="autoSleep", json_schema_extra={"examples": [True]})
     region: Optional[StrictStr] = Field(default=None, description="Target region for the sandbox", json_schema_extra={"examples": ["eu"]})
-    publish_ports: Optional[List[Annotated[int, Field(le=65535, strict=True, ge=1)]]] = Field(default=None, description="Sandbox ports to expose through the public gateway. Each entry is published as a separate public URL once the VM is running.", alias="publishPorts", json_schema_extra={"examples": [[8080, 3000]]})
+    ports: Optional[List[SandboxPort]] = Field(default=None, description="Guest ports to expose. Each entry is protocol http|tcp and a guest port.", json_schema_extra={"examples": [[{"protocol": "http", "port": 8080}]]})
     labels: Optional[Dict[str, Annotated[str, Field(strict=True, max_length=20)]]] = Field(default=None, description="Key-value labels attached at creation. Immutable after the sandbox is created. Max 5 labels; keys and values may each contain up to 20 characters. Keys match `^[a-z0-9]([-a-z0-9_]*[a-z0-9])?$`; neither keys nor values may contain `,` or `=`.", json_schema_extra={"examples": [{"env": "prod", "team": "backend"}]})
-    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars", "autoSleep", "region", "publishPorts", "labels"]
+    __properties: ClassVar[List[str]] = ["name", "image", "cpu", "mem", "orgId", "userId", "sync", "envVars", "autoSleep", "region", "ports", "labels"]
 
     @field_validator('name', mode="before")
     def name_validate_regular_expression(cls, value):
@@ -110,7 +122,7 @@ class CreateSandboxRequest(BaseModel):
             "envVars": obj.get("envVars"),
             "autoSleep": obj.get("autoSleep"),
             "region": obj.get("region"),
-            "publishPorts": obj.get("publishPorts"),
+            "ports": obj.get("ports"),
             "labels": obj.get("labels")
         })
         return _obj

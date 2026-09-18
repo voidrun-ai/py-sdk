@@ -110,14 +110,14 @@ sandbox = vr.create_sandbox(
     mem=1024,
     cpu=1,
     labels={"env": "prod", "team": "api"},
-    publish_ports=[8080],  # expose ports as public URLs (set at create time only)
+    ports=[{"protocol": "http", "port": 8080}],
 )
 
 result = sandbox.exec('echo "Hello from VoidRun"')
 # Exec returns VoidRunResponse whose .data is ExecResponseData
 print(result.data.stdout)
 print(sandbox.labels)
-print(sandbox.publish_ports)
+print(sandbox.ports)
 
 # Public URLs are only available for ports declared at creation
 print(sandbox.get_public_urls())
@@ -128,10 +128,10 @@ print(listed.meta.total)
 sandbox.remove()
 ```
 
-`publish_ports` (alias `publishPorts`) must be set at creation to expose ports
-as public HTTPS URLs. Pass up to **4** ports (each `1–65535`, no duplicates);
-the created sandbox echoes them on `sandbox.publish_ports`. Ports not published
-at creation are not reachable via `get_public_urls()`.
+`ports` must be set at creation to expose HTTP ports as public HTTPS URLs.
+Pass up to **4** entries (`protocol` `http` or `tcp`, port `1–65535`, unique
+guest ports); the created sandbox echoes them on `sandbox.ports`. Ports not
+published at creation are not reachable via `get_public_urls()`.
 
 ### Async
 
@@ -176,6 +176,7 @@ Use the same mental model as `@voidrun/sdk` (or the internal TS client):
 | `sandbox.runCode` | `sandbox.run_code` |
 | `CodeExecutionResult` | `CodeExecutionResult` (Pydantic model) |
 | `CodeInterpreter` | `CodeInterpreter` (alias: `Interpreter` on `sandbox.interpreter`) |
+| `configForNode` / `nodeApiBaseURL` | After create/get/list, sandbox calls go to `{nodeId}-api.void-run.com` |
 
 **Listing sandboxes** returns a **`ListSandboxesResult`** with:
 
@@ -188,7 +189,7 @@ Use the same mental model as `@voidrun/sdk` (or the internal TS client):
 
 **Recommended methods**
 
-- `create_sandbox(...)` → `Sandbox` (optional `labels=`, `publish_ports=`)
+- `create_sandbox(...)` → `Sandbox` (optional `labels=`, `ports=`)
 - `get_sandbox(sandbox_id)` → `Sandbox`
 - `list_sandboxes(page=..., limit=..., labels=...)` → `ListSandboxesResult`
 - `remove_sandbox(sandbox_id)` → `None`
@@ -201,7 +202,7 @@ Create options accept both snake_case and camelCase where noted in code (e.g. `e
 
 ### `Sandbox`
 
-Notable attributes: `id`, `name`, `cpu`, `mem`, `org_id`, `status`, `env_vars`, `image`, `region`, `ref_id`, `auto_sleep`, `disk_mb`, `labels`, `publish_ports`, `created_at`, `created_by`.
+Notable attributes: `id`, `name`, `cpu`, `mem`, `org_id`, `status`, `env_vars`, `image`, `region`, `ref_id`, `auto_sleep`, `disk_mb`, `labels`, `ports`, `created_at`, `created_by`.
 
 Sub-clients:
 

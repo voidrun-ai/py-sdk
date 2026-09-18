@@ -62,7 +62,7 @@ def _build_create_sandbox_request(
     auto_sleep: Optional[bool],
     region: Optional[str],
     labels: Optional[Dict[str, str]] = None,
-    publish_ports: Optional[List[int]] = None,
+    ports: Optional[List[Any]] = None,
 ) -> CreateSandboxRequest:
     default_name = f"sdbx-{int(time.time() * 1000)}"
     org_clean = (org_id or "").strip() or None
@@ -78,7 +78,7 @@ def _build_create_sandbox_request(
         auto_sleep=auto_sleep,
         region=region,
         labels=labels,
-        publish_ports=publish_ports,
+        ports=ports,
     )
 
 
@@ -127,8 +127,7 @@ class VoidRun:
         autoSleep: Optional[bool] = None,
         region: Optional[str] = None,
         labels: Optional[Dict[str, str]] = None,
-        publish_ports: Optional[List[int]] = None,
-        publishPorts: Optional[List[int]] = None,
+        ports: Optional[List[Any]] = None,
         _owner: Optional[Any] = None,
     ) -> Sandbox:
         """_owner: internal — AsyncVoidRun passes itself so Sandbox uses the async client."""
@@ -143,7 +142,6 @@ class VoidRun:
         ev = env_vars if env_vars is not None else envVars
         asl = auto_sleep if auto_sleep is not None else autoSleep
         uid = user_id if user_id is not None else userId
-        pp = publish_ports if publish_ports is not None else publishPorts
 
         req = _build_create_sandbox_request(
             name=name,
@@ -157,7 +155,7 @@ class VoidRun:
             auto_sleep=asl,
             region=region,
             labels=labels,
-            publish_ports=pp,
+            ports=ports,
         )
         response = self._sandboxes_api.create_sandbox_with_http_info(
             create_sandbox_request=req,
@@ -250,7 +248,7 @@ class SandboxesFacade:
             auto_sleep=kwargs.get("auto_sleep") or kwargs.get("autoSleep"),
             region=kwargs.get("region"),
             labels=kwargs.get("labels"),
-            publish_ports=kwargs.get("publish_ports") or kwargs.get("publishPorts"),
+            ports=kwargs.get("ports"),
         )
         response = self._api.create_sandbox_with_http_info(
             create_sandbox_request=req,
@@ -388,7 +386,7 @@ class AsyncSandboxesFacade:
             auto_sleep=kwargs.get("auto_sleep") or kwargs.get("autoSleep"),
             region=kwargs.get("region"),
             labels=kwargs.get("labels"),
-            publish_ports=kwargs.get("publish_ports") or kwargs.get("publishPorts"),
+            ports=kwargs.get("ports"),
         )
         response = await self._client._run_async(
             self._api.create_sandbox_with_http_info,
