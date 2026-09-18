@@ -20,7 +20,7 @@ import json
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
-from typing_extensions import Annotated
+from voidrun.api_client.models.create_sandbox_request import SandboxPort
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -43,9 +43,9 @@ class Sandbox(BaseModel):
     auto_sleep: Optional[StrictBool] = Field(default=None, description="Indicates if auto-sleep is enabled", alias="autoSleep", json_schema_extra={"examples": [True]})
     region: Optional[StrictStr] = Field(default=None, description="Region where the sandbox is hosted", json_schema_extra={"examples": ["us-east-1"]})
     node_id: Optional[StrictStr] = Field(default=None, description="Voidrun host that created this sandbox", alias="nodeId", json_schema_extra={"examples": ["host-fra-01"]})
-    publish_ports: Optional[List[Annotated[int, Field(le=65535, strict=True, ge=1)]]] = Field(default=None, description="Ports exposed through the public gateway. Empty when the sandbox is not publicly reachable.", alias="publishPorts", json_schema_extra={"examples": [[8080]]})
+    ports: Optional[List[SandboxPort]] = Field(default=None, description="Declared guest ports.", json_schema_extra={"examples": [[{"protocol": "http", "port": 8080}]]})
     labels: Optional[Dict[str, StrictStr]] = Field(default=None, description="Key-value labels attached at creation (immutable). Only present if set. See `GET /sandboxes` `labels` query parameter for filtering.", json_schema_extra={"examples": [{"env": "prod", "team": "backend"}]})
-    __properties: ClassVar[List[str]] = ["id", "name", "image", "cpu", "mem", "diskMB", "status", "createdAt", "createdBy", "orgId", "envVars", "autoSleep", "region", "nodeId", "publishPorts", "labels"]
+    __properties: ClassVar[List[str]] = ["id", "name", "image", "cpu", "mem", "diskMB", "status", "createdAt", "createdBy", "orgId", "envVars", "autoSleep", "region", "nodeId", "ports", "labels"]
 
     @field_validator('status')
     def status_validate_enum(cls, value):
@@ -122,7 +122,7 @@ class Sandbox(BaseModel):
             "autoSleep": obj.get("autoSleep"),
             "region": obj.get("region"),
             "nodeId": obj.get("nodeId"),
-            "publishPorts": obj.get("publishPorts"),
+            "ports": obj.get("ports"),
             "labels": obj.get("labels")
         })
         return _obj

@@ -6,6 +6,7 @@ from typing import Any, List, Optional, Union
 
 import httpx
 
+from .api_client import ApiClient, Configuration
 from .api_client.api.execution_api import ExecutionApi
 from .api_client.models.exec_request import ExecRequest
 from .api_client.models.exec_response_data import ExecResponseData
@@ -13,8 +14,49 @@ from .api_client.models.sandbox import Sandbox as SandboxModel
 from .commands import Commands
 from .fs import FS
 from .interpreter import CodeExecutionResult, CodeInterpreter
+from .node_url import node_api_base_url
 from .pty import PTY
 from .response import VoidRunResponse
+
+
+def fleet_api_client(client: Any) -> Any:
+    if hasattr(client, "_api_client"):
+        return client._api_client
+    return client._sync_client._api_client
+
+
+def api_client_for_node(client: Any, node_id: Optional[str] = None) -> Any:
+    fleet = fleet_api_client(client)
+    cfg = getattr(fleet, "configuration", None)
+    host = getattr(cfg, "host", None)
+    if not isinstance(host, str):
+        return fleet
+    next_host = node_api_base_url(host, node_id)
+    if next_host == host:
+        return fleet
+    pinned_cfg = Configuration(
+        host=next_host,
+        api_key=dict(cfg.api_key) if cfg.api_key else None,
+        api_key_prefix=dict(cfg.api_key_prefix) if cfg.api_key_prefix else None,
+        username=cfg.username,
+        password=cfg.password,
+        access_token=cfg.access_token,
+        ssl_ca_cert=cfg.ssl_ca_cert,
+        retries=cfg.retries,
+        ca_cert_data=cfg.ca_cert_data,
+        cert_file=cfg.cert_file,
+        key_file=cfg.key_file,
+        verify_ssl=cfg.verify_ssl,
+        assert_hostname=cfg.assert_hostname,
+        tls_server_name=cfg.tls_server_name,
+        proxy=cfg.proxy,
+        no_proxy=cfg.no_proxy,
+        proxy_headers=dict(cfg.proxy_headers) if cfg.proxy_headers else None,
+    )
+    api = ApiClient(pinned_cfg)
+    for name, value in getattr(fleet, "default_headers", {}).items():
+        api.set_default_header(name, value)
+    return api
 
 
 @dataclass
@@ -29,11 +71,8 @@ class Sandbox:
     def __init__(self, client: Any, model: SandboxModel):
         self._client = client
         self._model = model
-        self._exec_api = ExecutionApi(
-            self._client._api_client
-            if hasattr(self._client, "_api_client")
-            else self._client._sync_client._api_client,
-        )
+        self._api_client = api_client_for_node(client, model.node_id)
+        self._exec_api = ExecutionApi(self._api_client)
 
         self.id = model.id
         self.name = model.name
@@ -50,16 +89,12 @@ class Sandbox:
         self.image = model.image
         self.disk_mb = model.disk_mb
         self.labels = model.labels
-        self.publish_ports = model.publish_ports
+        self.ports = model.ports
 
         self.fs = FS(self)
         self.pty = PTY(self)
         self.interpreter = CodeInterpreter(self)
         self.commands = Commands(self)
-
-    def _voidrun_sync(self) -> Any:
-        """VoidRun instance used for REST calls (unwrap AsyncVoidRun)."""
-        return getattr(self._client, "_sync_client", self._client)
 
     def __repr__(self):
         return f"<Sandbox id={self.id} name={self.name} status={self.status}>"
@@ -89,17 +124,18 @@ class Sandbox:
 
     def remove(self) -> None:
         """Aligned with ts-sdk `sandbox.remove()`."""
-        self._voidrun_sync().remove_sandbox(self.id)
+        self._sandboxes_api().delete_sandbox_with_http_info(id=self.id)
 
     def delete(self) -> None:
         """Deprecated alias for `remove()`."""
         self.remove()
 
     async def remove_async(self) -> None:
-        from .client import AsyncVoidRun
-
-        if isinstance(self._client, AsyncVoidRun):
-            await self._client.remove_sandbox(self.id)
+        if hasattr(self._client, "_run_async"):
+            api = self._sandboxes_api()
+            await self._client._run_async(
+                api.delete_sandbox_with_http_info, id=self.id
+            )
         else:
             self.remove()
 
@@ -109,12 +145,7 @@ class Sandbox:
     def _sandboxes_api(self):
         from .api_client.api.sandboxes_api import SandboxesApi
 
-        client = (
-            self._client._api_client
-            if hasattr(self._client, "_api_client")
-            else self._client._sync_client._api_client
-        )
-        return SandboxesApi(client)
+        return SandboxesApi(self._api_client)
 
     def start(self):
         """Start a stopped/error sandbox (`POST …/start`)."""

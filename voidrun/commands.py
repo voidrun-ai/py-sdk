@@ -8,7 +8,7 @@ class Commands:
     def __init__(self, sandbox: Any):
         self._sandbox = sandbox
         self._client = sandbox._client
-        self._api = ExecutionApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
+        self._api = ExecutionApi(sandbox._api_client)
         self._sandbox_id = sandbox.id
 
     def run(self, command: str, env: Optional[dict] = None, cwd: Optional[str] = None, timeout: int = 0) -> VoidRunResponse[Any]:

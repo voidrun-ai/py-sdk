@@ -11,7 +11,7 @@ class FS:
     def __init__(self, sandbox: Any):
         self._sandbox = sandbox
         self._client = sandbox._client
-        self._api = FileSystemApi(self._client._api_client if hasattr(self._client, "_api_client") else self._client._sync_client._api_client)
+        self._api = FileSystemApi(sandbox._api_client)
         self._sandbox_id = sandbox.id
 
     def list_files(self, path: str) -> VoidRunResponse[List[Any]]:
